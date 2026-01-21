@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=80.10.1"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "master-thesis"
 version = "0.1.0"
@@ -29,6 +33,10 @@ torchvision = [
 name = "pytorch-cu130"
 url = "https://download.pytorch.org/whl/cu130"
 explicit = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
 
 [tool.ruff]
 include = ["*.py", "notebooks/*.ipynb"]

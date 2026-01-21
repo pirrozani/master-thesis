@@ -1,16 +1,47 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+
+# Build directories
 build/
 dist/
 wheels/
+
+# Package metadata
 *.egg-info
+
+# Linter cache
+.ruff_cache/
 
 # Virtual environments
 .venv
 
-# IDE files
+# VS Code settings
 .vscode/
+
+# JetBrains IDE settings
 .idea/
 *.iml
 
+# Machine Learning artifacts
+# Model files
+models/
+
+# Adapter files
+adapters/
+
+# Data files
+data/
+
+# PyTorch model files
+*.pt
+*.bin
+
+# SafeTensors format
+*.safetensors
+
+# Unsloth compiled cache
+unsloth_compiled_cache
+
+# Training outputs
+outputs/

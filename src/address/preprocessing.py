@@ -1,0 +1,172 @@
+"""Data preprocessing for address extraction."""
+
+import pandas as pd
+from datasets import Dataset, DatasetDict
+
+
+class AddressPreprocessor:
+    """Preprocessor for address data."""
+
+    def __init__(
+        self,
+        train_ratio: float = 0.80,
+        val_ratio: float = 0.10,
+        test_ratio: float = 0.10,
+    ):
+        """Initialize preprocessor.
+
+        Args:
+            train_ratio: Proportion of data for training
+            val_ratio: Proportion of data for validation
+            test_ratio: Proportion of data for testing
+        """
+        self.train_ratio = train_ratio
+        self.val_ratio = val_ratio
+        self.test_ratio = test_ratio
+
+    def load_csv(self, path: str) -> pd.DataFrame:
+        """Load and validate CSV with required columns.
+
+        Args:
+            path: Path to CSV file
+
+        Returns:
+            Loaded DataFrame
+
+        Raises:
+            ValueError: If required columns are missing
+        """
+        required_columns = [
+            'name_address',
+            'gm_name',
+            'gm_address',
+            'gm_types',
+            'entity_name',
+            'address',
+            'city',
+            'state',
+            'zip_code',
+            'country',
+        ]
+
+        df = pd.read_csv(path)
+
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f'Missing required columns: {missing_columns}')
+
+        return df
+
+    def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Standardize countries, remove quotes, handle nulls.
+
+        Args:
+            df: Input DataFrame
+
+        Returns:
+            Cleaned DataFrame
+        """
+        df = df.copy()
+
+        # Define fields to clean
+        fields_to_clean = ['address', 'city', 'state', 'zip_code', 'country']
+
+        for field in fields_to_clean:
+            if field in df.columns:
+                # Handle nulls - convert to empty string
+                df[field] = df[field].fillna('')
+
+                # Convert to string type
+                df[field] = df[field].astype(str)
+
+                # Replace 'nan' string with empty string
+                df[field] = df[field].replace('nan', '')
+
+                # Remove extraneous quotes
+                df[field] = df[field].str.replace('"', '', regex=False)
+                df[field] = df[field].str.replace("'", '', regex=False)
+
+                # Strip leading/trailing whitespace
+                df[field] = df[field].str.strip()
+
+
+        return df
+
+
+    def format_toon(self, row: pd.Series) -> dict:
+        """Convert row to prompt/completion pair.
+
+        Args:
+            row: DataFrame row with columns: name_address, address, city,
+                state, zip_code, country
+
+        Returns:
+            Dictionary with 'prompt' and 'completion' keys
+        """
+        # Extract input text
+        name_address = row.get('name_address', '')
+
+        # Create prompt using the template
+        prompt = (
+            f'Extract address: address{{street,city,state,zip,country}}:\n'
+            f'{name_address}'
+        )
+
+        # Extract label fields
+        street = row.get('address', '')
+        city = row.get('city', '')
+        state = row.get('state', '')
+        zip_code = row.get('zip_code', '')
+        country = row.get('country', '')
+
+        # Create TOON formatted completion
+        completion = (
+            f'address{{street,city,state,zip,country}}: '
+            f'{street},{city},{state},{zip_code},{country}'
+        )
+
+        return {'prompt': prompt, 'completion': completion}
+
+    def create_dataset(self, df: pd.DataFrame) -> DatasetDict:
+        """Create HuggingFace DatasetDict with splits.
+
+        Args:
+            df: Input DataFrame with cleaned and normalized data
+
+        Returns:
+            DatasetDict with train/val/test splits
+        """
+        # Shuffle the dataframe
+        df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
+
+        # Calculate split sizes
+        n = len(df)
+
+        # Keep only 20000 samples for faster processing
+        n = min(20000, n)
+
+        train_size = int(n * self.train_ratio)
+        val_size = int(n * self.val_ratio)
+
+        # Split the data
+        train_df = df[:train_size]
+        val_df = df[train_size : train_size + val_size]
+        test_df = df[train_size + val_size : n]
+
+        # Format each split as prompt/completion pairs
+        train_data = [self.format_toon(row) for _, row in train_df.iterrows()]
+        val_data = [self.format_toon(row) for _, row in val_df.iterrows()]
+        test_data = [self.format_toon(row) for _, row in test_df.iterrows()]
+
+        # Create HuggingFace datasets
+        train_dataset = Dataset.from_list(train_data)
+        val_dataset = Dataset.from_list(val_data)
+        test_dataset = Dataset.from_list(test_data)
+
+        # Create DatasetDict
+        dataset_dict = DatasetDict(
+            {'train': train_dataset, 'validation': val_dataset, 'test': test_dataset}
+        )
+
+        return dataset_dict
+

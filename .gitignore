@@ -30,8 +30,8 @@ models/
 # Adapter files
 adapters/
 
-# Data files
-data/
+# Data folder that is on root level
+/data/
 
 # PyTorch model files
 *.pt

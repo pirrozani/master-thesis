@@ -57,7 +57,8 @@ class AddressPreprocessor:
 
         return df
 
-    def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def clean_data(df: pd.DataFrame) -> pd.DataFrame:
         """Standardize countries, remove quotes, handle nulls.
 
         Args:
@@ -76,7 +77,7 @@ class AddressPreprocessor:
                 # Handle nulls - convert to empty string
                 df[field] = df[field].fillna('')
 
-                # Convert to string type
+                # Convert to a string type
                 df[field] = df[field].astype(str)
 
                 # Replace 'nan' string with empty string
@@ -89,43 +90,29 @@ class AddressPreprocessor:
                 # Strip leading/trailing whitespace
                 df[field] = df[field].str.strip()
 
-
         return df
 
+    @staticmethod
+    def format_row(row: pd.Series) -> dict:
+        """Convert row to dictionary with required fields.
 
-    def format_toon(self, row: pd.Series) -> dict:
-        """Convert row to prompt/completion pair.
+        Extracts the relevant fields from a DataFrame row for dataset creation.
 
         Args:
             row: DataFrame row with columns: name_address, address, city,
                 state, zip_code, country
 
         Returns:
-            Dictionary with 'prompt' and 'completion' keys
+            Dictionary with raw field values for training
         """
-        # Extract input text
-        name_address = row.get('name_address', '')
-
-        # Create prompt using the template
-        prompt = (
-            f'Extract address: address{{street,city,state,zip,country}}:\n'
-            f'{name_address}'
-        )
-
-        # Extract label fields
-        street = row.get('address', '')
-        city = row.get('city', '')
-        state = row.get('state', '')
-        zip_code = row.get('zip_code', '')
-        country = row.get('country', '')
-
-        # Create TOON formatted completion
-        completion = (
-            f'address{{street,city,state,zip,country}}: '
-            f'{street},{city},{state},{zip_code},{country}'
-        )
-
-        return {'prompt': prompt, 'completion': completion}
+        return {
+            'name_address': row.get('name_address', ''),
+            'street': row.get('address', ''),
+            'city': row.get('city', ''),
+            'state': row.get('state', ''),
+            'zip_code': row.get('zip_code', ''),
+            'country': row.get('country', ''),
+        }
 
     def create_dataset(self, df: pd.DataFrame) -> DatasetDict:
         """Create HuggingFace DatasetDict with splits.
@@ -134,16 +121,13 @@ class AddressPreprocessor:
             df: Input DataFrame with cleaned and normalized data
 
         Returns:
-            DatasetDict with train/val/test splits
+            DatasetDict with train/val/test splits containing raw field values
         """
         # Shuffle the dataframe
         df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
 
         # Calculate split sizes
         n = len(df)
-
-        # Keep only 20000 samples for faster processing
-        n = min(20000, n)
 
         train_size = int(n * self.train_ratio)
         val_size = int(n * self.val_ratio)
@@ -153,10 +137,10 @@ class AddressPreprocessor:
         val_df = df[train_size : train_size + val_size]
         test_df = df[train_size + val_size : n]
 
-        # Format each split as prompt/completion pairs
-        train_data = [self.format_toon(row) for _, row in train_df.iterrows()]
-        val_data = [self.format_toon(row) for _, row in val_df.iterrows()]
-        test_data = [self.format_toon(row) for _, row in test_df.iterrows()]
+        # Format each split with raw field values
+        train_data = [self.format_row(row) for _, row in train_df.iterrows()]
+        val_data = [self.format_row(row) for _, row in val_df.iterrows()]
+        test_data = [self.format_row(row) for _, row in test_df.iterrows()]
 
         # Create HuggingFace datasets
         train_dataset = Dataset.from_list(train_data)
@@ -169,4 +153,3 @@ class AddressPreprocessor:
         )
 
         return dataset_dict
-

@@ -2,18 +2,26 @@
 
 import argparse
 from pathlib import Path
-from src.address.preprocessing import AddressPreprocessor
+from src.data.preprocessing import AddressPreprocessor
 
 
 def main():
     """Run preprocessing pipeline."""
-    parser = argparse.ArgumentParser(description='Preprocess address CSV data')
+    parser = argparse.ArgumentParser(
+        description='Preprocess address CSV data',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python -m scripts.data.preprocess data/address.csv
+  python -m scripts.data.preprocess data/address.csv --output-dir data/processed
+        """,
+    )
     parser.add_argument('csv_path', type=str, help='Path to input CSV file')
     parser.add_argument(
         '--output-dir',
         type=str,
         default='data/processed',
-        help='Output directory for processed dataset'
+        help='Output directory for processed dataset',
     )
 
     args = parser.parse_args()
@@ -37,10 +45,18 @@ def main():
     output_path.mkdir(parents=True, exist_ok=True)
     dataset.save_to_disk(str(output_path))
 
-    print(f'Dataset saved to {output_path}')
-    print(f"Train: {len(dataset['train'])} samples")
-    print(f"Validation: {len(dataset['validation'])} samples")
-    print(f"Test: {len(dataset['test'])} samples")
+    print(f'\nDataset saved to {output_path}')
+    print(f'Train: {len(dataset["train"])} samples')
+    print(f'Validation: {len(dataset["validation"])} samples')
+    print(f'Test: {len(dataset["test"])} samples')
+
+    # Show example of raw fields
+    print('\nExample raw fields:')
+    print('-' * 60)
+    example = dataset['train'][0]
+    for key, value in example.items():
+        print(f'{key}: {value}')
+    print('-' * 60)
 
 
 if __name__ == '__main__':

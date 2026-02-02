@@ -12,8 +12,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python -m scripts.data.preprocess data/address.csv
-  python -m scripts.data.preprocess data/address.csv --output-dir data/processed
+  uv run scripts/data/preprocess.py data/address.csv
+  uv run scripts/data/preprocess.py data/address.csv --output-dir data/processed
         """,
     )
     parser.add_argument('csv_path', type=str, help='Path to input CSV file')

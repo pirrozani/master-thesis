@@ -15,7 +15,6 @@ dependencies = [
     "pip>=25.3",
     "ruff>=0.14.14",
     "torch>=2.9.1",
-    "torchaudio>=2.9.1",
     "torchvision>=0.24.1",
     "unsloth>=2026.1.4",
     "pydantic>=2.12.5",

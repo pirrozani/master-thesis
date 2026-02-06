@@ -23,6 +23,9 @@ wheels/
 .idea/
 *.iml
 
+# GitHub
+.github/
+
 # Machine Learning artifacts
 # Model files
 models/

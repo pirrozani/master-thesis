@@ -50,7 +50,7 @@ def create_assistant_message(address: Address) -> dict:
     }
 
 
-def create_training_messages(fields) -> list[dict]:
+def create_training_messages(fields: dict) -> list[dict]:
     """Create a complete message list for training.
 
     Args:
@@ -68,14 +68,14 @@ def create_training_messages(fields) -> list[dict]:
     """
     return [
         create_system_message(),
-        create_user_message(fields['name_address']),
+        create_user_message(fields.get('name_address', '')),
         create_assistant_message(
             Address(
-                street=fields['street'],
-                city=fields['city'],
-                state=fields['state'],
-                zip_code=fields['zip_code'],
-                country=fields['country'],
+                street=fields.get('street', ''),
+                city=fields.get('city', ''),
+                state=fields.get('state', ''),
+                zip_code=fields.get('zip_code', ''),
+                country=fields.get('country', '')
             )
         ),
     ]

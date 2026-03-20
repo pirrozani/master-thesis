@@ -75,7 +75,7 @@ Examples:
     if args.list_models:
         print('Available models:')
         for alias in list_available_models():
-            config = get_model_config(alias)
+            config = get_model_config(alias, task='address')
             print(f'  {alias}: {config.base_model}')
         return
 
@@ -93,7 +93,7 @@ Examples:
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model)
+    config = get_model_config(args.model, task='address')
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (

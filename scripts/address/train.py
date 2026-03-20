@@ -69,7 +69,7 @@ Examples:
     if args.list_models:
         print('Available models:')
         for alias in list_available_models():
-            config = get_model_config(alias)
+            config = get_model_config(alias, task='address')
             print(f'  {alias}: {config.base_model}')
         return
 
@@ -83,7 +83,7 @@ Examples:
         raise ValueError(f'Dataset path does not exist: {dataset_path}')
 
     # Resolve model configuration
-    config = get_model_config(args.model)
+    config = get_model_config(args.model, task='address')
     print('\nModel Configuration:')
     print(f'  Model Alias: {args.model}')
     print(f'  Base Model: {config.base_model}')

@@ -27,10 +27,10 @@ class AddressExtractor:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model)
+            config = get_model_config(model, task='address')
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL)
+            config = get_model_config(DEFAULT_MODEL, task='address')
 
         self.base_model = config.base_model
         self.adapter_path = (

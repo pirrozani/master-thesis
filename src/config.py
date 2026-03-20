@@ -50,14 +50,15 @@ MODEL_REGISTRY: dict[str, ModelConfig] = {
 DEFAULT_MODEL = 'qwen-0.5b'
 
 
-def get_model_config(model_alias: str) -> ModelConfig:
-    """Get model configuration by alias.
+def get_model_config(model_alias: str, task: str = 'address') -> ModelConfig:
+    """Get model configuration by alias with task-specific adapter directory.
 
     Args:
         model_alias: Short model alias (e.g., 'qwen-0.5b', 'gemma-270m')
+        task: Task name for adapter directory scoping
 
     Returns:
-        ModelConfig instance
+        ModelConfig instance with task-specific adapter_dir
 
     Raises:
         ValueError: If model alias is not found in the registry
@@ -66,10 +67,20 @@ def get_model_config(model_alias: str) -> ModelConfig:
         available = ', '.join(MODEL_REGISTRY.keys())
         raise ValueError(
             f"Model alias '{model_alias}' not found in registry. "
-            f"Available models: {available}"
+            f'Available models: {available}'
         )
-    
-    return MODEL_REGISTRY[model_alias]
+
+    config = MODEL_REGISTRY[model_alias]
+
+    # Return a copy with task-specific adapter directory
+    return ModelConfig(
+        name=config.name,
+        base_model=config.base_model,
+        max_seq_length=config.max_seq_length,
+        lora_r=config.lora_r,
+        lora_alpha=config.lora_alpha,
+        adapter_dir=f'adapters/{task}/{config.name}',
+    )
 
 
 def list_available_models() -> list[str]:

@@ -21,11 +21,9 @@ def format_address_output(address: Address) -> str:
     """
 
     import json
+
     json_repr = json.dumps(address.model_dump(), indent=2)
-    lines = [
-        'Result:',
-        f'{json_repr}'
-    ]
+    lines = ['Result:', f'{json_repr}']
 
     return '\n'.join(lines)
 
@@ -181,7 +179,7 @@ def main():
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model)
+    config = get_model_config(args.model, task='address')
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (

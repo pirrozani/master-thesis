@@ -25,11 +25,11 @@ class AddressModelTrainer:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model)
+            config = get_model_config(model, task='address')
             if config is None:
                 raise ValueError(f'Unknown model: {model}')
         elif model is None:
-            config = get_model_config(DEFAULT_MODEL)
+            config = get_model_config(DEFAULT_MODEL, task='address')
         else:
             raise TypeError(f'Expected ModelConfig or str, got {type(model)}')
 

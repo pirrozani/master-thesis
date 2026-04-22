@@ -104,7 +104,7 @@ class AddressExtractor:
 
         # Tokenize input (use model's configured max_seq_length)
         inputs = self.tokenizer(
-            prompt,
+            text=prompt,
             return_tensors='pt',
             truncation=True,
             max_length=self.config.max_seq_length,
@@ -165,7 +165,7 @@ class AddressExtractor:
 
         # Tokenize all inputs with padding
         inputs = self.tokenizer(
-            prompts,
+            text=prompts,
             return_tensors='pt',
             truncation=True,
             max_length=self.config.max_seq_length,

@@ -48,3 +48,8 @@ unsloth_compiled_cache
 
 # Training outputs
 outputs/
+
+# Logs
+logs/runs/*
+!logs/runs/.gitkeep
+!logs/.gitkeep

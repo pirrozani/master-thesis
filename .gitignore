@@ -23,6 +23,9 @@ wheels/
 .idea/
 *.iml
 
+# GitHub
+.github/
+
 # Machine Learning artifacts
 # Model files
 models/
@@ -30,8 +33,8 @@ models/
 # Adapter files
 adapters/
 
-# Data files
-data/
+# Data folder that is on root level
+/data/
 
 # PyTorch model files
 *.pt
@@ -45,3 +48,8 @@ unsloth_compiled_cache
 
 # Training outputs
 outputs/
+
+# Logs
+logs/runs/*
+!logs/runs/.gitkeep
+!logs/.gitkeep

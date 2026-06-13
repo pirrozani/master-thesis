@@ -61,6 +61,8 @@ class EntityNameExtractor:
             # Enable inference mode for faster generation
             FastLanguageModel.for_inference(model)
 
+            model.generation_config.max_length = None
+
             self.model = model
             self.tokenizer = tokenizer
 

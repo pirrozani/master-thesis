@@ -1,3 +1,3 @@
-"""Entity name extraction and cleaning core modules."""
+"""Entity name task package."""
 
 __all__ = []

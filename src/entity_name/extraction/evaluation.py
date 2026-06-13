@@ -8,8 +8,8 @@ from typing import Optional
 from datasets import load_from_disk
 from tqdm import tqdm
 
-from src.entity_name.inference import EntityNameExtractor
-from src.entity_name.models import EntityName
+from src.entity_name.extraction.inference import EntityNameExtractor
+from src.entity_name.extraction.models import EntityName
 from src.utils import save_file
 
 

@@ -4,7 +4,7 @@ from unsloth import FastLanguageModel, is_bfloat16_supported, unsloth_train
 from datasets import DatasetDict
 from trl import SFTTrainer, SFTConfig
 from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
-from src.entity_name.prompt_templates import format_training_example
+from src.entity_name.extraction.prompt_templates import format_training_example
 
 
 class EntityNameModelTrainer:

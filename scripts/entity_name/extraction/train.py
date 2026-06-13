@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 from datasets import DatasetDict, load_from_disk
-from src.entity_name.training import EntityNameModelTrainer
+from src.entity_name.extraction.training import EntityNameModelTrainer
 from src.config import (
     get_model_config,
     list_available_models,
@@ -21,7 +21,7 @@ Available models:
   {', '.join(list_available_models())}
 
 Examples:
-  uv run scripts/entity_name/train.py data/processed/entity_name
+  uv run scripts/entity_name/extraction/train.py data/processed/entity_name
     --model qwen-0.5b
     --output-dir adapters/entity_name/qwen-0.5b
     --num-epochs 1

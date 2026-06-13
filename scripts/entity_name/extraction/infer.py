@@ -5,8 +5,8 @@ import json
 import sys
 from pathlib import Path
 
-from src.entity_name.inference import EntityNameExtractor
-from src.entity_name.models import EntityName
+from src.entity_name.extraction.inference import EntityNameExtractor
+from src.entity_name.extraction.models import EntityName
 from src.config import get_model_config
 from src.utils import save_file
 

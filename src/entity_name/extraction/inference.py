@@ -2,8 +2,8 @@
 
 from unsloth import FastLanguageModel
 from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
-from src.entity_name.models import EntityName
-from src.entity_name.prompt_templates import format_inference_prompt
+from src.entity_name.extraction.models import EntityName
+from src.entity_name.extraction.prompt_templates import format_inference_prompt
 
 
 class EntityNameExtractor:

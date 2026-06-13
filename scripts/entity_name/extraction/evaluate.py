@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 from src.utils import save_file
 from src.config import get_model_config, list_available_models, DEFAULT_MODEL
-from src.entity_name.evaluation import EntityNameEvaluator
-from src.entity_name.inference import EntityNameExtractor
+from src.entity_name.extraction.evaluation import EntityNameEvaluator
+from src.entity_name.extraction.inference import EntityNameExtractor
 
 
 def main():
@@ -19,8 +19,10 @@ Available models:
   {', '.join(list_available_models())}
 
 Examples:
-  uv run scripts/entity_name/evaluate.py data/processed/entity_name/test --model qwen-0.5b
-  uv run scripts/entity_name/evaluate.py data/processed/entity_name/test --model qwen-3b --save-predictions
+  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
+      --model qwen-0.5b
+  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
+      --model qwen-3b --save-predictions
         """,
     )
     parser.add_argument(

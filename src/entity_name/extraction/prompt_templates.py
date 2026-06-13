@@ -1,7 +1,7 @@
 """Prompt templates and message formatting for entity name extraction."""
 
 from transformers import PreTrainedTokenizer
-from src.entity_name.models import EntityName
+from src.entity_name.extraction.models import EntityName
 
 # Standard prompt template
 EXTRACT_PROMPT = 'Extract: {text}'

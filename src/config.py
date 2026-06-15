@@ -49,12 +49,7 @@ MODEL_REGISTRY: dict[str, ModelConfig] = {
         name='gemma-270m',
         base_model='unsloth/gemma-3-270m-it-unsloth-bnb-4bit',
         max_seq_length=128,
-    ),
-    'qwen3-4b': ModelConfig(
-        name='qwen3-4b',
-        base_model='Qwen/Qwen3.5-4B',
-        max_seq_length=128,
-    ),
+    )
 }
 
 # Default model alias

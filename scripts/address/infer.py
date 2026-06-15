@@ -189,7 +189,7 @@ def main():
         print(f'Error: Adapter path does not exist: {adapter_path}', file=sys.stderr)
         sys.exit(1)
 
-    print(f'\nModel Configuration:')
+    print('\nModel Configuration:')
     print(f'  Model Alias: {args.model}')
     print(f'  Base Model: {config.base_model}')
     print(f'  Adapter Path: {adapter_path}')

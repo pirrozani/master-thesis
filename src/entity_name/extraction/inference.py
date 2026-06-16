@@ -1,13 +1,13 @@
-"""Inference pipeline for address extraction."""
+"""Inference pipeline for entity name extraction."""
 
 from unsloth import FastLanguageModel
 from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
-from src.address.models import Address
-from src.address.prompt_templates import format_inference_prompt
+from src.entity_name.extraction.models import EntityName
+from src.entity_name.extraction.prompt_templates import format_inference_prompt
 
 
-class AddressExtractor:
-    """Inference pipeline for extracting addresses."""
+class EntityNameExtractor:
+    """Inference pipeline for extracting and cleaning entity names."""
 
     def __init__(
         self,
@@ -27,10 +27,10 @@ class AddressExtractor:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task='address')
+            config = get_model_config(model, task='entity_name')
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL, task='address')
+            config = get_model_config(DEFAULT_MODEL, task='entity_name')
 
         self.base_model = config.base_model
         self.adapter_path = (
@@ -51,13 +51,9 @@ class AddressExtractor:
             RuntimeError: If model or adapter loading fails
         """
         try:
-            # Load base model with adapter weights
-            # FastLanguageModel.from_pretrained automatically merges adapters
-            # when adapter_path is provided
-
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=self.adapter_path,  # Load from the adapter directory
-                max_seq_length=self.config.max_seq_length,  # Use config value
+                max_seq_length=self.config.max_seq_length,
                 dtype=None,  # Auto-detect dtype
                 load_in_4bit=True,  # Use 4-bit quantization for efficiency
             )
@@ -80,16 +76,16 @@ class AddressExtractor:
                 f'Failed to load model from {self.adapter_path}: {str(e)}'
             ) from e
 
-    def extract(self, text: str) -> Address:
-        """Extract address from single text input.
+    def extract(self, text: str) -> EntityName:
+        """Extract and clean entity name from single text input.
 
         Uses chat template formatting and greedy decoding for deterministic outputs.
 
         Args:
-            text: Raw text containing address
+            text: Raw text containing entity name
 
         Returns:
-            Extracted Address object with validated fields
+            Extracted EntityName object with cleaned name
 
         Raises:
             RuntimeError: If the model is not loaded
@@ -99,12 +95,12 @@ class AddressExtractor:
 
         # Handle empty input
         if not text or text.strip() == '':
-            return Address()
+            return EntityName()
 
         # Format prompt using centralized prompts module
         prompt = format_inference_prompt(text, self.tokenizer)
 
-        # Tokenize input (use model's configured max_seq_length)
+        # Tokenize input
         inputs = self.tokenizer(
             text=prompt,
             return_tensors='pt',
@@ -115,7 +111,7 @@ class AddressExtractor:
         # Generate output with greedy decoding (temperature=0)
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=128,  # Addresses are short
+            max_new_tokens=128,  # Entity names are short
             temperature=0.0,  # Greedy decoding for deterministic output
             do_sample=False,  # Disable sampling
             pad_token_id=self.tokenizer.pad_token_id,
@@ -130,27 +126,26 @@ class AddressExtractor:
             generated_ids, skip_special_tokens=True
         ).strip()
 
-        # Parse pipe-delimited format to an Address object
+        # Parse output to EntityName object
         try:
-            address = Address.from_pipe(completion)
+            entity_name = EntityName.from_output(completion)
         except Exception as e:
-            # If parsing fails, return an empty Address
             print(f'Warning: Failed to parse model output: {e}')
             print(f'Raw output: {completion}')
-            address = Address()
+            entity_name = EntityName()
 
-        return address
+        return entity_name
 
-    def extract_batch(self, texts: list[str]) -> list[Address]:
-        """Extract addresses from multiple inputs.
+    def extract_batch(self, texts: list[str]) -> list[EntityName]:
+        """Extract entity names from multiple inputs.
 
         Processes multiple texts in a batch for efficiency using a chat template.
 
         Args:
-            texts: List of raw texts containing addresses
+            texts: List of raw texts containing entity names
 
         Returns:
-            List of extracted Address objects
+            List of extracted EntityName objects
 
         Raises:
             RuntimeError: If the model is not loaded
@@ -162,7 +157,7 @@ class AddressExtractor:
         if not texts:
             return []
 
-        # Create chat-formatted prompts for all texts using a centralized module
+        # Create chat-formatted prompts for all texts
         prompts = [format_inference_prompt(text, self.tokenizer) for text in texts]
 
         # Tokenize all inputs with padding
@@ -184,8 +179,8 @@ class AddressExtractor:
             eos_token_id=self.tokenizer.eos_token_id,
         )
 
-        # Decode all outputs and parse addresses
-        addresses = []
+        # Decode all outputs and parse entity names
+        entity_names = []
         for i, (input_ids, output_ids) in enumerate(zip(inputs['input_ids'], outputs)):
             # Extract only generated tokens (exclude input tokens)
             generated_ids = output_ids[len(input_ids) :]
@@ -193,15 +188,14 @@ class AddressExtractor:
                 generated_ids, skip_special_tokens=True
             ).strip()
 
-            # Parse pipe-delimited format to Address object
+            # Parse output to EntityName object
             try:
-                address = Address.from_pipe(completion)
+                entity_name = EntityName.from_output(completion)
             except Exception as e:
-                # If parsing fails, return empty Address
                 print(f'Warning: Failed to parse output for text {i}: {e}')
                 print(f'Raw output: {completion}')
-                address = Address()
+                entity_name = EntityName()
 
-            addresses.append(address)
+            entity_names.append(entity_name)
 
-        return addresses
+        return entity_names

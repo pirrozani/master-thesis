@@ -1,48 +1,49 @@
-"""Inference script for address extraction."""
+"""Inference script for entity name extraction."""
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
-from src.address.inference import AddressExtractor
-from src.address.models import Address
+from src.entity_name.extraction.inference import EntityNameExtractor
+from src.entity_name.extraction.models import EntityName
 from src.config import get_model_config
 from src.utils import save_file
 
 
-def format_address_output(address: Address) -> str:
-    """Format address for display.
+def format_entity_name_output(entity_name: EntityName) -> str:
+    """Format entity name for display.
 
     Args:
-        address: Address object to format
+        entity_name: EntityName object to format
 
     Returns:
         Formatted string representation
     """
-
-    import json
-
-    json_repr = json.dumps(address.model_dump(), indent=2)
-    lines = ['Result:', f'{json_repr}']
+    json_repr = json.dumps(entity_name.model_dump(), indent=2)
+    lines = [
+        'Result:',
+        f'{json_repr}',
+    ]
 
     return '\n'.join(lines)
 
 
-def run_interactive_mode(extractor: AddressExtractor) -> None:
-    """Run an interactive chat session for address extraction.
+def run_interactive_mode(extractor: EntityNameExtractor) -> None:
+    """Run an interactive chat session for entity name extraction.
 
     Args:
-        extractor: Initialized AddressExtractor with loaded model
+        extractor: Initialized EntityNameExtractor with loaded model
     """
     # Display welcome message
     print('\n' + '=' * 60)
-    print('Interactive Address Extraction Mode')
+    print('Interactive Entity Name Extraction Mode')
     print('=' * 60)
     print('\nAvailable commands:')
     print('  exit, quit, q    - Exit the session')
     print('  help, ?          - Display this help message')
     print('  multiline, ml    - Enter multi-line input mode')
-    print('\nEnter text containing an address to extract, or a command.')
+    print('\nEnter text containing an entity name to extract, or a command.')
     print('=' * 60 + '\n')
 
     # Main REPL loop
@@ -71,7 +72,7 @@ def run_interactive_mode(extractor: AddressExtractor) -> None:
                 print('  exit, quit, q    - Exit the session')
                 print('  help, ?          - Display this help message')
                 print('  multiline, ml    - Enter multi-line input mode')
-                print('\nEnter text containing an address to extract.\n')
+                print('\nEnter text containing an entity name to extract.\n')
                 continue
 
             # Handle multiline commands
@@ -91,13 +92,13 @@ def run_interactive_mode(extractor: AddressExtractor) -> None:
                 if not user_input.strip():
                     continue
 
-            # Extract address using the extractor
+            # Extract entity name using the extractor
             try:
-                address = extractor.extract(user_input)
+                entity_name = extractor.extract(user_input)
 
                 # Display formatted output
                 print()
-                print(format_address_output(address))
+                print(format_entity_name_output(entity_name))
                 print()
 
             except RuntimeError as e:
@@ -115,13 +116,13 @@ def run_interactive_mode(extractor: AddressExtractor) -> None:
 def main():
     """Run inference pipeline."""
     parser = argparse.ArgumentParser(
-        description='Extract addresses from text using fine-tuned model'
+        description='Extract and clean entity names from text using fine-tuned model'
     )
     parser.add_argument(
         'input',
         type=str,
         nargs='?',  # Make input optional for interactive mode
-        help='Text input or path to file containing text (one address per line)',
+        help='Text input or path to file containing text (one entry per line)',
     )
     parser.add_argument(
         '--model',
@@ -144,7 +145,7 @@ def main():
         '--interactive',
         '-i',
         action='store_true',
-        help='Launch interactive chat mode for continuous address extraction',
+        help='Launch interactive chat mode for continuous entity name extraction',
     )
     parser.add_argument(
         '--device',
@@ -179,7 +180,7 @@ def main():
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model, task='address')
+    config = get_model_config(args.model, task='entity_name')
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (
@@ -195,8 +196,8 @@ def main():
     print(f'  Adapter Path: {adapter_path}')
 
     # Initialize extractor
-    print(f'\nInitializing AddressExtractor with adapter: {adapter_path}')
-    extractor = AddressExtractor(
+    print(f'\nInitializing EntityNameExtractor with adapter: {adapter_path}')
+    extractor = EntityNameExtractor(
         model=config, adapter_path=str(adapter_path), device=args.device
     )
 
@@ -231,13 +232,13 @@ def main():
             sys.exit(1)
 
         print(f'Processing {len(texts)} inputs in batch...\n')
-        addresses = extractor.extract_batch(texts)
+        entity_names = extractor.extract_batch(texts)
 
         # Format output
         results = []
-        for i, (text, address) in enumerate(zip(texts, addresses), 1):
+        for i, (text, entity_name) in enumerate(zip(texts, entity_names), 1):
             results.append(f'Input {i}: {text}')
-            results.append(format_address_output(address))
+            results.append(format_entity_name_output(entity_name))
             results.append('')  # Empty line between results
 
     else:
@@ -258,10 +259,10 @@ def main():
             sys.exit(1)
 
         print(f'Processing input: {text}\n')
-        address = extractor.extract(text)
+        entity_name = extractor.extract(text)
 
         # Format output
-        results = [f'Input: {text}', format_address_output(address)]
+        results = [f'Input: {text}', format_entity_name_output(entity_name)]
 
     # Output results
     output_text = '\n'.join(results)

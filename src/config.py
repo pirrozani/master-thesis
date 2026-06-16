@@ -38,12 +38,18 @@ MODEL_REGISTRY: dict[str, ModelConfig] = {
         base_model='Qwen/Qwen2.5-3B-Instruct',
         max_seq_length=128,
     ),
+    # Qwen 3.5 variants
+    'qwen3.5-4b': ModelConfig(
+        name='qwen3.5-4b',
+        base_model='Qwen/Qwen3.5-4B',
+        max_seq_length=128,
+    ),
     # Gemma variants
     'gemma-270m': ModelConfig(
         name='gemma-270m',
         base_model='unsloth/gemma-3-270m-it-unsloth-bnb-4bit',
         max_seq_length=128,
-    ),
+    )
 }
 
 # Default model alias

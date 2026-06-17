@@ -100,7 +100,7 @@ class EntityNameModelTrainer:
 
         Args:
             dataset: Training dataset with 'train' split containing raw fields
-                     (name_address, cleaned_name)
+                     (name_address, entity_name)
             num_epochs: Number of training epochs (1-2 recommended)
             push_to_hub: Whether to push trained adapter to Hugging Face Hub
                 For `push_to_hub=True`, ensure you have set up Hugging Face credentials
@@ -118,7 +118,7 @@ class EntityNameModelTrainer:
         def apply_chat_template(example):
             fields = {
                 'name_address': example['name_address'],
-                'cleaned_name': example['cleaned_name'],
+                'entity_name': example['entity_name'],
             }
             formatted_text = format_training_example(fields, self.tokenizer)
             return {'text': formatted_text}

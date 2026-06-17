@@ -252,7 +252,7 @@ class EntityNamePreprocessor:
         """
         return {
             'name_address': row.get('name_address', ''),
-            'cleaned_name': row.get('entity_name', ''),
+            'entity_name': row.get('entity_name', ''),
         }
 
     def create_dataset(self, df: pd.DataFrame) -> DatasetDict:

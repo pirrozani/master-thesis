@@ -299,7 +299,7 @@ class EntityNameEvaluator:
             # Extract input texts and ground truths
             input_texts = batch_samples['name_address']
             ground_truths = [
-                EntityName(name=batch_samples['cleaned_name'][i])
+                EntityName(name=batch_samples['entity_name'][i])
                 for i in range(len(batch_samples['name_address']))
             ]
 

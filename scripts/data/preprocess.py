@@ -102,6 +102,10 @@ def preprocess_entity_type(csv_path: str, output_dir: str) -> None:
 
     print(f'Loading CSV from {csv_path}...')
     df = preprocessor.load_csv(csv_path)
+
+    # Keep only a small subset because COMPANY examples are much more than PERSON
+    df = df.head(10000)
+
     print(f'Loaded {len(df)} rows')
 
     print('Cleaning data...')

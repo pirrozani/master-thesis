@@ -66,7 +66,7 @@ def create_training_messages(fields: dict) -> list[dict]:
         fields: Dictionary with keys:
 
             - name_address: Raw text containing entity name and address
-            - cleaned_name: The cleaned/normalised entity name
+            - entity_name: The cleaned/normalised entity name
 
     Returns:
         List of message dicts for training
@@ -74,7 +74,7 @@ def create_training_messages(fields: dict) -> list[dict]:
     return [
         create_system_message(),
         create_user_message(fields.get('name_address', '')),
-        create_assistant_message(EntityName(name=fields.get('cleaned_name', ''))),
+        create_assistant_message(EntityName(name=fields.get('entity_name', ''))),
     ]
 
 
@@ -97,7 +97,7 @@ def format_training_example(fields: dict, tokenizer: PreTrainedTokenizer) -> str
         fields: Dictionary with keys:
 
             - name_address: Raw text containing entity name and address
-            - cleaned_name: The cleaned/normalised entity name
+            - entity_name: The cleaned/normalised entity name
         tokenizer: HuggingFace tokenizer with chat template support
 
     Returns:

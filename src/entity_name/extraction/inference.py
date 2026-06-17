@@ -1,7 +1,8 @@
 """Inference pipeline for entity name extraction."""
 
 from unsloth import FastLanguageModel
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.entity_name.extraction.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.entity_name.extraction.models import EntityName
 from src.entity_name.extraction.prompt_templates import format_inference_prompt
 
@@ -27,10 +28,10 @@ class EntityNameExtractor:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task='entity_name')
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL, task='entity_name')
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
 
         self.base_model = config.base_model
         self.adapter_path = (

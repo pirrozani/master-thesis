@@ -4,7 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 from src.utils import save_file
-from src.config import get_model_config, list_available_models, DEFAULT_MODEL
+from src.config import get_model_config, list_available_models
+from src.entity_name.extraction.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.entity_name.extraction.evaluation import EntityNameEvaluator
 from src.entity_name.extraction.inference import EntityNameExtractor
 
@@ -16,7 +17,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Available models:
-  {', '.join(list_available_models())}
+  {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
   uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
@@ -81,8 +82,8 @@ Examples:
     # Handle --list-models flag
     if args.list_models:
         print('Available models:')
-        for alias in list_available_models():
-            config = get_model_config(alias, task='entity_name')
+        for alias in list_available_models(MODEL_REGISTRY):
+            config = get_model_config(alias, task=TASK, registry=MODEL_REGISTRY)
             print(f'  {alias}: {config.base_model}')
         return
 
@@ -100,7 +101,7 @@ Examples:
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model, task='entity_name')
+    config = get_model_config(args.model, task=TASK, registry=MODEL_REGISTRY)
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (

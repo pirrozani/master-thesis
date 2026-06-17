@@ -5,7 +5,7 @@ from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
 from src.entity_name.classification.models import EntityType
 from src.entity_name.classification.prompt_templates import format_inference_prompt
 
-TASK = 'entity_name/classification'
+TASK = 'entity_name_classification'
 
 
 class EntityTypeClassifier:

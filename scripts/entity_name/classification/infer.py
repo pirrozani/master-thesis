@@ -10,7 +10,7 @@ from src.entity_name.classification.models import EntityType
 from src.config import get_model_config, DEFAULT_MODEL
 from src.utils import save_file
 
-TASK = 'entity_name/classification'
+TASK = 'entity_name_classification'
 
 
 def format_entity_type_output(entity_type: EntityType) -> str:

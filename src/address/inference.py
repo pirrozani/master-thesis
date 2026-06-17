@@ -1,7 +1,8 @@
 """Inference pipeline for address extraction."""
 
 from unsloth import FastLanguageModel
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.address.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.address.models import Address
 from src.address.prompt_templates import format_inference_prompt
 
@@ -27,10 +28,10 @@ class AddressExtractor:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task='address')
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL, task='address')
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
 
         self.base_model = config.base_model
         self.adapter_path = (

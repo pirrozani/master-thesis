@@ -3,7 +3,8 @@
 from unsloth import FastLanguageModel, is_bfloat16_supported, unsloth_train
 from datasets import DatasetDict
 from trl import SFTTrainer, SFTConfig
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.address.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.address.prompt_templates import format_training_example
 
 
@@ -25,11 +26,11 @@ class AddressModelTrainer:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task='address')
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
             if config is None:
                 raise ValueError(f'Unknown model: {model}')
         elif model is None:
-            config = get_model_config(DEFAULT_MODEL, task='address')
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
         else:
             raise TypeError(f'Expected ModelConfig or str, got {type(model)}')
 

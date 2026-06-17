@@ -4,13 +4,9 @@ import argparse
 from pathlib import Path
 from datasets import load_from_disk
 from src.entity_name.classification.training import EntityTypeModelTrainer
-from src.config import (
-    get_model_config,
-    list_available_models,
-    DEFAULT_MODEL,
-)
+from src.config import get_model_config, list_available_models
+from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 
-TASK = 'entity_name/classification'
 DEFAULT_DATASET = 'data/processed/entity_name/classification'
 
 
@@ -21,7 +17,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Available models:
-  {', '.join(list_available_models())}
+  {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
   uv run scripts/entity_name/classification/train.py {DEFAULT_DATASET}
@@ -70,8 +66,8 @@ Examples:
     # Handle --list-models flag
     if args.list_models:
         print('Available models:')
-        for alias in list_available_models():
-            config = get_model_config(alias, task=TASK)
+        for alias in list_available_models(MODEL_REGISTRY):
+            config = get_model_config(alias, task=TASK, registry=MODEL_REGISTRY)
             print(f'  {alias}: {config.base_model}')
         return
 
@@ -81,7 +77,7 @@ Examples:
         raise ValueError(f'Dataset path does not exist: {dataset_path}')
 
     # Resolve model configuration
-    config = get_model_config(args.model, task=TASK)
+    config = get_model_config(args.model, task=TASK, registry=MODEL_REGISTRY)
     print('\nModel Configuration:')
     print(f'  Model Alias: {args.model}')
     print(f'  Base Model: {config.base_model}')

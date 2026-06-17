@@ -1,11 +1,10 @@
 """Inference pipeline for entity type classification."""
 
 from unsloth import FastLanguageModel
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.entity_name.classification.models import EntityType
 from src.entity_name.classification.prompt_templates import format_inference_prompt
-
-TASK = 'entity_name_classification'
 
 
 class EntityTypeClassifier:
@@ -29,10 +28,10 @@ class EntityTypeClassifier:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task=TASK)
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL, task=TASK)
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
 
         self.base_model = config.base_model
         self.adapter_path = (

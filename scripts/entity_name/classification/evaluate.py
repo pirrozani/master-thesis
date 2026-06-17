@@ -4,11 +4,11 @@ import argparse
 import sys
 from pathlib import Path
 from src.utils import save_file
-from src.config import get_model_config, list_available_models, DEFAULT_MODEL
+from src.config import get_model_config, list_available_models
+from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.entity_name.classification.evaluation import EntityTypeEvaluator
 from src.entity_name.classification.inference import EntityTypeClassifier
 
-TASK = 'entity_name/classification'
 DEFAULT_TEST_DATA = 'data/processed/entity_name_classification/test'
 
 
@@ -19,7 +19,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Available models:
-  {', '.join(list_available_models())}
+  {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
   uv run scripts/entity_name/classification/evaluate.py <test_dir> --model qwen-0.5b
@@ -79,8 +79,8 @@ Examples:
     # Handle --list-models flag
     if args.list_models:
         print('Available models:')
-        for alias in list_available_models():
-            config = get_model_config(alias, task=TASK)
+        for alias in list_available_models(MODEL_REGISTRY):
+            config = get_model_config(alias, task=TASK, registry=MODEL_REGISTRY)
             print(f'  {alias}: {config.base_model}')
         return
 
@@ -94,7 +94,7 @@ Examples:
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model, task=TASK)
+    config = get_model_config(args.model, task=TASK, registry=MODEL_REGISTRY)
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (

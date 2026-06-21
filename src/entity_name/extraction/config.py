@@ -6,7 +6,7 @@ TASK = 'entity_name/extraction'
 DEFAULT_MODEL = 'qwen-0.5b'
 
 # Generated-output length budgets (max_new_tokens) for inference
-SINGLE_MAX_NEW_TOKENS = 128  # single-example inference
+SINGLE_MAX_NEW_TOKENS = 64  # single-example inference
 BATCH_MAX_NEW_TOKENS = 1024  # batch inference
 
 # Model registry mapping aliases to their configurations

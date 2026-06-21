@@ -36,7 +36,6 @@ class EntityNameModelTrainer:
 
         # Apply configuration
         self.base_model = config.base_model
-        self.max_seq_length = config.max_seq_length
         self.lora_r = config.lora_r
         self.lora_alpha = config.lora_alpha
         self.output_dir = output_dir if output_dir is not None else config.adapter_dir
@@ -51,7 +50,7 @@ class EntityNameModelTrainer:
 
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.base_model,
-            max_seq_length=self.max_seq_length,
+            max_seq_length=2048,  # model context window
             dtype=None,  # Auto-detect dtype
             load_in_4bit=True,  # Use 4-bit quantization
         )

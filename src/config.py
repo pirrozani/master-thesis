@@ -14,7 +14,6 @@ class ModelConfig:
 
     name: str
     base_model: str
-    max_seq_length: int = 512
     lora_r: int = 16
     lora_alpha: int = 16
     adapter_dir: str = ''
@@ -54,7 +53,6 @@ def get_model_config(
     return ModelConfig(
         name=config.name,
         base_model=config.base_model,
-        max_seq_length=config.max_seq_length,
         lora_r=config.lora_r,
         lora_alpha=config.lora_alpha,
         adapter_dir=f'adapters/{task}/{config.name}',

@@ -134,7 +134,7 @@ Examples:
             print('=' * 60)
             print('Suggestions:')
             print('  - Reduce batch size (currently 2)')
-            print('  - Reduce max_seq_length (currently 512)')
+            print('  - Reduce max_seq_length (currently 2048)')
             print('  - Reduce gradient_accumulation_steps')
             print('  - Close other GPU-intensive applications')
             print('=' * 60)

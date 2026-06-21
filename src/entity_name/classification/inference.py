@@ -2,7 +2,13 @@
 
 from unsloth import FastLanguageModel
 from src.config import ModelConfig, get_model_config
-from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
+from src.entity_name.classification.config import (
+    MODEL_REGISTRY,
+    DEFAULT_MODEL,
+    TASK,
+    SINGLE_MAX_NEW_TOKENS,
+    BATCH_MAX_NEW_TOKENS,
+)
 from src.entity_name.classification.models import EntityType
 from src.entity_name.classification.prompt_templates import format_inference_prompt
 
@@ -52,10 +58,9 @@ class EntityTypeClassifier:
             RuntimeError: If model or adapter loading fails
         """
         try:
-
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=self.adapter_path,  # Load from the adapter directory
-                max_seq_length=self.config.max_seq_length,  # Use config value
+                max_seq_length=2048,  # model context window
                 dtype=None,  # Auto-detect dtype
                 load_in_4bit=True,  # Use 4-bit quantization for efficiency
             )
@@ -102,7 +107,7 @@ class EntityTypeClassifier:
         # Format prompt using centralized prompts module
         prompt = format_inference_prompt(text, self.tokenizer)
 
-        # Tokenize input (use model's configured max_seq_length)
+        # Tokenize input
         inputs = self.tokenizer(
             prompt,
             return_tensors='pt',
@@ -112,7 +117,7 @@ class EntityTypeClassifier:
         # Generate output with greedy decoding (temperature=0)
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=self.config.max_seq_length,  # Labels are a single short word
+            max_new_tokens=SINGLE_MAX_NEW_TOKENS,
             max_length=None,
             temperature=0.0,  # Greedy decoding for deterministic output
             do_sample=False,  # Disable sampling
@@ -169,7 +174,7 @@ class EntityTypeClassifier:
         # Generate outputs with greedy decoding
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=1024,
+            max_new_tokens=BATCH_MAX_NEW_TOKENS,
             max_length=None,
             temperature=0.0,  # Greedy decoding
             do_sample=False,

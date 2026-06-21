@@ -7,10 +7,9 @@ from pathlib import Path
 
 from src.entity_name.classification.inference import EntityTypeClassifier
 from src.entity_name.classification.models import EntityType
-from src.config import get_model_config, DEFAULT_MODEL
+from src.config import get_model_config
+from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.utils import save_file
-
-TASK = 'entity_name/classification'
 
 
 def format_entity_type_output(entity_type: EntityType) -> str:
@@ -160,7 +159,7 @@ def main():
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model, task=TASK)
+    config = get_model_config(args.model, task=TASK, registry=MODEL_REGISTRY)
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (

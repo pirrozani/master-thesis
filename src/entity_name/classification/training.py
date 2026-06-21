@@ -3,10 +3,9 @@
 from unsloth import FastLanguageModel, is_bfloat16_supported, unsloth_train
 from datasets import DatasetDict
 from trl import SFTTrainer, SFTConfig
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 from src.entity_name.classification.prompt_templates import format_training_example
-
-TASK = 'entity_name/classification'
 
 
 class EntityTypeModelTrainer:
@@ -27,17 +26,16 @@ class EntityTypeModelTrainer:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task=TASK)
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
             if config is None:
                 raise ValueError(f'Unknown model: {model}')
         elif model is None:
-            config = get_model_config(DEFAULT_MODEL, task=TASK)
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
         else:
             raise TypeError(f'Expected ModelConfig or str, got {type(model)}')
 
         # Apply configuration
         self.base_model = config.base_model
-        self.max_seq_length = config.max_seq_length
         self.lora_r = config.lora_r
         self.lora_alpha = config.lora_alpha
         self.output_dir = output_dir if output_dir is not None else config.adapter_dir
@@ -52,7 +50,7 @@ class EntityTypeModelTrainer:
 
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.base_model,
-            max_seq_length=self.max_seq_length,
+            max_seq_length=2048,  # model context window
             dtype=None,  # Auto-detect dtype
             load_in_4bit=True,  # Use 4-bit quantization
         )

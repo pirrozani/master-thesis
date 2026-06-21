@@ -75,7 +75,7 @@ def create_training_messages(fields: dict) -> list[dict]:
                 city=fields.get('city', ''),
                 state=fields.get('state', ''),
                 zip_code=fields.get('zip_code', ''),
-                country=fields.get('country', '')
+                country=fields.get('country', ''),
             )
         ),
     ]

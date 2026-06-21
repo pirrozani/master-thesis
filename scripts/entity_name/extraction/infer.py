@@ -8,6 +8,7 @@ from pathlib import Path
 from src.entity_name.extraction.inference import EntityNameExtractor
 from src.entity_name.extraction.models import EntityName
 from src.config import get_model_config
+from src.entity_name.extraction.config import MODEL_REGISTRY, TASK
 from src.utils import save_file
 
 
@@ -180,7 +181,7 @@ def main():
         sys.exit(1)
 
     # Resolve model configuration
-    config = get_model_config(args.model, task='entity_name')
+    config = get_model_config(args.model, task=TASK, registry=MODEL_REGISTRY)
 
     # Resolve adapter path (CLI arg overrides config)
     adapter_path = (

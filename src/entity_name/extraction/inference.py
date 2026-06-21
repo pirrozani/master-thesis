@@ -1,7 +1,14 @@
 """Inference pipeline for entity name extraction."""
 
 from unsloth import FastLanguageModel
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.entity_name.extraction.config import (
+    MODEL_REGISTRY,
+    DEFAULT_MODEL,
+    TASK,
+    SINGLE_MAX_NEW_TOKENS,
+    BATCH_MAX_NEW_TOKENS,
+)
 from src.entity_name.extraction.models import EntityName
 from src.entity_name.extraction.prompt_templates import format_inference_prompt
 
@@ -27,10 +34,10 @@ class EntityNameExtractor:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task='entity_name')
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL, task='entity_name')
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
 
         self.base_model = config.base_model
         self.adapter_path = (
@@ -53,7 +60,7 @@ class EntityNameExtractor:
         try:
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=self.adapter_path,  # Load from the adapter directory
-                max_seq_length=self.config.max_seq_length,
+                max_seq_length=2048,  # model context window
                 dtype=None,  # Auto-detect dtype
                 load_in_4bit=True,  # Use 4-bit quantization for efficiency
             )
@@ -105,13 +112,13 @@ class EntityNameExtractor:
             text=prompt,
             return_tensors='pt',
             truncation=True,
-            max_length=self.config.max_seq_length,
+            max_length=None,  # kept for backwards compatibility
         ).to(self.device)
 
         # Generate output with greedy decoding (temperature=0)
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=128,  # Entity names are short
+            max_new_tokens=SINGLE_MAX_NEW_TOKENS,
             temperature=0.0,  # Greedy decoding for deterministic output
             do_sample=False,  # Disable sampling
             pad_token_id=self.tokenizer.pad_token_id,
@@ -165,14 +172,14 @@ class EntityNameExtractor:
             text=prompts,
             return_tensors='pt',
             truncation=True,
-            max_length=self.config.max_seq_length,
+            max_length=None,  # kept for backwards compatibility
             padding=True,
         ).to(self.device)
 
         # Generate outputs with greedy decoding
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=128,
+            max_new_tokens=BATCH_MAX_NEW_TOKENS,
             temperature=0.0,  # Greedy decoding
             do_sample=False,
             pad_token_id=self.tokenizer.pad_token_id,

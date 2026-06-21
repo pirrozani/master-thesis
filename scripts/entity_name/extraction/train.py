@@ -4,11 +4,8 @@ import argparse
 from pathlib import Path
 from datasets import DatasetDict, load_from_disk
 from src.entity_name.extraction.training import EntityNameModelTrainer
-from src.config import (
-    get_model_config,
-    list_available_models,
-    DEFAULT_MODEL,
-)
+from src.config import get_model_config, list_available_models
+from src.entity_name.extraction.config import MODEL_REGISTRY, DEFAULT_MODEL, TASK
 
 
 def main():
@@ -18,7 +15,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Available models:
-  {', '.join(list_available_models())}
+  {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
   uv run scripts/entity_name/extraction/train.py data/processed/entity_name
@@ -67,8 +64,8 @@ Examples:
     # Handle --list-models flag
     if args.list_models:
         print('Available models:')
-        for alias in list_available_models():
-            config = get_model_config(alias, task='entity_name')
+        for alias in list_available_models(MODEL_REGISTRY):
+            config = get_model_config(alias, task=TASK, registry=MODEL_REGISTRY)
             print(f'  {alias}: {config.base_model}')
         return
 
@@ -82,7 +79,7 @@ Examples:
         raise ValueError(f'Dataset path does not exist: {dataset_path}')
 
     # Resolve model configuration
-    config = get_model_config(args.model, task='entity_name')
+    config = get_model_config(args.model, task=TASK, registry=MODEL_REGISTRY)
     output_dir = args.output_dir or config.adapter_dir
 
     print('\nModel Configuration:')
@@ -142,7 +139,7 @@ Examples:
             print('=' * 60)
             print('Suggestions:')
             print('  - Reduce batch size (currently 2)')
-            print('  - Reduce max_seq_length (currently 512)')
+            print('  - Reduce max_seq_length (currently 2048)')
             print('  - Reduce gradient_accumulation_steps')
             print('  - Close other GPU-intensive applications')
             print('=' * 60)

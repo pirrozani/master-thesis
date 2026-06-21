@@ -1,7 +1,14 @@
 """Inference pipeline for address extraction."""
 
 from unsloth import FastLanguageModel
-from src.config import ModelConfig, get_model_config, DEFAULT_MODEL
+from src.config import ModelConfig, get_model_config
+from src.address.config import (
+    MODEL_REGISTRY,
+    DEFAULT_MODEL,
+    TASK,
+    SINGLE_MAX_NEW_TOKENS,
+    BATCH_MAX_NEW_TOKENS,
+)
 from src.address.models import Address
 from src.address.prompt_templates import format_inference_prompt
 
@@ -27,10 +34,10 @@ class AddressExtractor:
         if isinstance(model, ModelConfig):
             config = model
         elif isinstance(model, str):
-            config = get_model_config(model, task='address')
+            config = get_model_config(model, task=TASK, registry=MODEL_REGISTRY)
         else:
             # Use the default model
-            config = get_model_config(DEFAULT_MODEL, task='address')
+            config = get_model_config(DEFAULT_MODEL, task=TASK, registry=MODEL_REGISTRY)
 
         self.base_model = config.base_model
         self.adapter_path = (
@@ -57,7 +64,7 @@ class AddressExtractor:
 
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=self.adapter_path,  # Load from the adapter directory
-                max_seq_length=self.config.max_seq_length,  # Use config value
+                max_seq_length=2048,  # model context window
                 dtype=None,  # Auto-detect dtype
                 load_in_4bit=True,  # Use 4-bit quantization for efficiency
             )
@@ -104,18 +111,18 @@ class AddressExtractor:
         # Format prompt using centralized prompts module
         prompt = format_inference_prompt(text, self.tokenizer)
 
-        # Tokenize input (use model's configured max_seq_length)
+        # Tokenize input
         inputs = self.tokenizer(
             text=prompt,
             return_tensors='pt',
             truncation=True,
-            max_length=self.config.max_seq_length,
+            max_length=None,  # kept for backwards compatibility
         ).to(self.device)
 
         # Generate output with greedy decoding (temperature=0)
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=128,  # Addresses are short
+            max_new_tokens=SINGLE_MAX_NEW_TOKENS,
             temperature=0.0,  # Greedy decoding for deterministic output
             do_sample=False,  # Disable sampling
             pad_token_id=self.tokenizer.pad_token_id,
@@ -170,14 +177,14 @@ class AddressExtractor:
             text=prompts,
             return_tensors='pt',
             truncation=True,
-            max_length=self.config.max_seq_length,
+            max_length=None,  # kept for backwards compatibility
             padding=True,
         ).to(self.device)
 
         # Generate outputs with greedy decoding
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=128,
+            max_new_tokens=BATCH_MAX_NEW_TOKENS,
             temperature=0.0,  # Greedy decoding
             do_sample=False,
             pad_token_id=self.tokenizer.pad_token_id,

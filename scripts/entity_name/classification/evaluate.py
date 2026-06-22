@@ -9,7 +9,7 @@ from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL,
 from src.entity_name.classification.evaluation import EntityTypeEvaluator
 from src.entity_name.classification.inference import EntityTypeClassifier
 
-DEFAULT_TEST_DATA = 'data/processed/entity_name_classification/test'
+DEFAULT_TEST_DATA = 'data/processed/entity_name/classification/test'
 
 
 def main():

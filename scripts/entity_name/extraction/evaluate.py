@@ -20,9 +20,9 @@ Available models:
   {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
-  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
+  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/extraction/test \\
       --model qwen-0.5b
-  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
+  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/extraction/test \\
       --model qwen-3b --save-predictions
         """,
     )
@@ -30,7 +30,8 @@ Examples:
         'test_data_path',
         type=str,
         nargs='?',  # Make optional for --list-models
-        help='Path to test dataset directory (e.g., data/processed/entity_name/test)',
+        help='Path to test dataset directory '
+        '(e.g., data/processed/entity_name/extraction/test)',
     )
     parser.add_argument(
         '--model',

@@ -18,7 +18,7 @@ Available models:
   {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
-  uv run scripts/entity_name/extraction/train.py data/processed/entity_name
+  uv run scripts/entity_name/extraction/train.py data/processed/entity_name/extraction
     --model qwen-0.5b
     --output-dir adapters/entity_name/qwen-0.5b
     --num-epochs 1

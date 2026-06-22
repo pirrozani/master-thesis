@@ -13,8 +13,8 @@ from src.data.preprocessing import (
 # Default output directory per task
 DEFAULT_OUTPUT_DIRS = {
     'address': 'data/processed/address',
-    'entity_name': 'data/processed/entity_name',
-    'entity_type': 'data/processed/entity_name_classification',
+    'entity_name': 'data/processed/entity_name/extraction',
+    'entity_type': 'data/processed/entity_name/classification',
 }
 
 

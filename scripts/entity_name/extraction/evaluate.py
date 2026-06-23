@@ -153,7 +153,7 @@ Examples:
         print(f'Error during evaluation: {e}', file=sys.stderr)
         sys.exit(1)
 
-    results_path = f'outputs/results/{args.model}_entity_name_test_info'
+    results_path = f'outputs/results/{TASK}/{args.model}.txt'
     save_file(str(metrics), results_path)
     print(f'\nSaved evaluation results to: {results_path}')
 

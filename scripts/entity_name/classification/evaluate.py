@@ -148,7 +148,7 @@ Examples:
         print(f'Error during evaluation: {e}', file=sys.stderr)
         sys.exit(1)
 
-    results_path = f'outputs/evaluation/{args.model}_metrics.txt'
+    results_path = f'outputs/results/{TASK}/{args.model}.txt'
     save_file(str(metrics), results_path)
     print(f'\nSaved evaluation results to: {results_path}')
 

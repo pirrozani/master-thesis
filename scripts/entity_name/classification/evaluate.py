@@ -62,7 +62,7 @@ Examples:
         type=str,
         default=None,
         help='Output file path for predictions '
-        '(default: per-task under outputs/evaluation/)',
+        '(default: outputs/training/{task}/{model}/evaluation_results.json)',
     )
     parser.add_argument(
         '--batch-size',
@@ -135,7 +135,9 @@ Examples:
     )
 
     # Resolve predictions output path
-    output_path = args.output or f'outputs/evaluation/{args.model}_predictions.json'
+    output_path = (
+        args.output or f'outputs/training/{TASK}/{args.model}/evaluation_results.json'
+    )
 
     # Run evaluation
     try:

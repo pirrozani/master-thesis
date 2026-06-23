@@ -62,10 +62,10 @@ Examples:
     parser.add_argument(
         '--output',
         type=str,
-        default='outputs/entity_name/evaluation_results.json',
+        default=None,
         help=(
             'Output file path for predictions '
-            '(default: outputs/entity_name/evaluation_results.json)'
+            '(default: outputs/training/{task}/{model}/evaluation_results.json)'
         ),
     )
     parser.add_argument(
@@ -142,11 +142,16 @@ Examples:
         test_data_path=str(test_data_path),
     )
 
+    # Resolve predictions output path
+    output_path = (
+        args.output or f'outputs/training/{TASK}/{args.model}/evaluation_results.json'
+    )
+
     # Run evaluation
     try:
         metrics = evaluator.evaluate(
             save_predictions=args.save_predictions,
-            output_path=args.output if args.save_predictions else None,
+            output_path=output_path if args.save_predictions else None,
             batch_size=args.batch_size,
         )
     except Exception as e:

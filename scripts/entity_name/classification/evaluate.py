@@ -9,7 +9,7 @@ from src.entity_name.classification.config import MODEL_REGISTRY, DEFAULT_MODEL,
 from src.entity_name.classification.evaluation import EntityTypeEvaluator
 from src.entity_name.classification.inference import EntityTypeClassifier
 
-DEFAULT_TEST_DATA = 'data/processed/entity_name_classification/test'
+DEFAULT_TEST_DATA = 'data/processed/entity_name/classification/test'
 
 
 def main():
@@ -62,7 +62,7 @@ Examples:
         type=str,
         default=None,
         help='Output file path for predictions '
-        '(default: per-task under outputs/evaluation/)',
+        '(default: outputs/training/{task}/{model}/evaluation_results.json)',
     )
     parser.add_argument(
         '--batch-size',
@@ -135,7 +135,9 @@ Examples:
     )
 
     # Resolve predictions output path
-    output_path = args.output or f'outputs/evaluation/{args.model}_predictions.json'
+    output_path = (
+        args.output or f'outputs/training/{TASK}/{args.model}/evaluation_results.json'
+    )
 
     # Run evaluation
     try:
@@ -148,7 +150,7 @@ Examples:
         print(f'Error during evaluation: {e}', file=sys.stderr)
         sys.exit(1)
 
-    results_path = f'outputs/evaluation/{args.model}_metrics.txt'
+    results_path = f'outputs/results/{TASK}/{args.model}.txt'
     save_file(str(metrics), results_path)
     print(f'\nSaved evaluation results to: {results_path}')
 

@@ -20,9 +20,9 @@ Available models:
   {', '.join(list_available_models(MODEL_REGISTRY))}
 
 Examples:
-  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
+  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/extraction/test \\
       --model qwen-0.5b
-  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/test \\
+  uv run scripts/entity_name/extraction/evaluate.py data/processed/entity_name/extraction/test \\
       --model qwen-3b --save-predictions
         """,
     )
@@ -30,7 +30,8 @@ Examples:
         'test_data_path',
         type=str,
         nargs='?',  # Make optional for --list-models
-        help='Path to test dataset directory (e.g., data/processed/entity_name/test)',
+        help='Path to test dataset directory '
+        '(e.g., data/processed/entity_name/extraction/test)',
     )
     parser.add_argument(
         '--model',
@@ -61,10 +62,10 @@ Examples:
     parser.add_argument(
         '--output',
         type=str,
-        default='outputs/entity_name/evaluation_results.json',
+        default=None,
         help=(
             'Output file path for predictions '
-            '(default: outputs/entity_name/evaluation_results.json)'
+            '(default: outputs/training/{task}/{model}/evaluation_results.json)'
         ),
     )
     parser.add_argument(
@@ -141,18 +142,23 @@ Examples:
         test_data_path=str(test_data_path),
     )
 
+    # Resolve predictions output path
+    output_path = (
+        args.output or f'outputs/training/{TASK}/{args.model}/evaluation_results.json'
+    )
+
     # Run evaluation
     try:
         metrics = evaluator.evaluate(
             save_predictions=args.save_predictions,
-            output_path=args.output if args.save_predictions else None,
+            output_path=output_path if args.save_predictions else None,
             batch_size=args.batch_size,
         )
     except Exception as e:
         print(f'Error during evaluation: {e}', file=sys.stderr)
         sys.exit(1)
 
-    results_path = f'outputs/results/{args.model}_entity_name_test_info'
+    results_path = f'outputs/results/{TASK}/{args.model}.txt'
     save_file(str(metrics), results_path)
     print(f'\nSaved evaluation results to: {results_path}')
 

@@ -13,8 +13,8 @@ from src.data.preprocessing import (
 # Default output directory per task
 DEFAULT_OUTPUT_DIRS = {
     'address': 'data/processed/address',
-    'entity_name': 'data/processed/entity_name',
-    'entity_type': 'data/processed/entity_name_classification',
+    'entity_name': 'data/processed/entity_name/extraction',
+    'entity_type': 'data/processed/entity_name/classification',
 }
 
 
@@ -102,6 +102,11 @@ def preprocess_entity_type(csv_path: str, output_dir: str) -> None:
 
     print(f'Loading CSV from {csv_path}...')
     df = preprocessor.load_csv(csv_path)
+
+    # Load some of the data because there is a class imbalance
+    df = df.sample(frac=0.1, random_state=42)
+    df = df.reset_index(drop=True)
+
     print(f'Loaded {len(df)} rows')
 
     print('Cleaning data...')

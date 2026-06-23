@@ -57,8 +57,9 @@ Examples:
     parser.add_argument(
         '--output',
         type=str,
-        default='outputs/training/evaluation_results.json',
-        help='Output file path for predictions (default: evaluation_results.json)',
+        default=None,
+        help='Output file path for predictions '
+        '(default: outputs/training/{task}/{model}/evaluation_results.json)',
     )
     parser.add_argument(
         '--batch-size',
@@ -134,18 +135,23 @@ Examples:
         test_data_path=str(test_data_path),
     )
 
+    # Resolve predictions output path
+    output_path = (
+        args.output or f'outputs/training/{TASK}/{args.model}/evaluation_results.json'
+    )
+
     # Run evaluation
     try:
         metrics = evaluator.evaluate(
             save_predictions=args.save_predictions,
-            output_path=args.output if args.save_predictions else None,
+            output_path=output_path if args.save_predictions else None,
             batch_size=args.batch_size,
         )
     except Exception as e:
         print(f'Error during evaluation: {e}', file=sys.stderr)
         sys.exit(1)
 
-    results_path = f'outputs/results/{args.model}_test_info'
+    results_path = f'outputs/results/{TASK}/{args.model}.txt'
     save_file(str(metrics), results_path)
     print(f'\nSaved evaluation results to: {results_path}')
 

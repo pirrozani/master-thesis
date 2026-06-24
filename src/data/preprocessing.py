@@ -500,3 +500,171 @@ class EntityTypePreprocessor:
         )
 
         return dataset_dict
+
+
+class EntityTypeExternalPreprocessor:
+    """Preprocessor for the external person/company classification dataset.
+
+    The source data (``ele-sage/person-company-names-classification``) is already
+    cleaned and pre-split into ``train.csv`` / ``test.csv``, each with two
+    columns: ``text`` (the cleaned, title-cased name) and ``label`` (integer:
+    ``0`` = person, ``1`` = company). No cleaning is applied here; the
+    preprocessor only maps columns/labels and draws class-balanced, fixed-size
+    splits so the result matches the schema used by the entity-name
+    classification task (columns ``entity_name`` and ``label``).
+
+    Download the raw dataset first:
+    ``hf download ele-sage/person-company-names-classification --type dataset
+    --local-dir data/raw/person-company-names-classification``
+    """
+
+    # Integer label -> string label mapping (matches the dataset card).
+    LABEL_MAP = {0: 'person', 1: 'company'}
+
+    def __init__(
+        self,
+        n_train: int = 20000,
+        n_val: int = 5000,
+        n_test: int = 5000,
+    ):
+        """Initialize preprocessor.
+
+        Args:
+            n_train: Total training rows (split evenly across both classes)
+            n_val: Total validation rows (split evenly across both classes)
+            n_test: Total test rows (split evenly across both classes)
+        """
+        self.n_train = n_train
+        self.n_val = n_val
+        self.n_test = n_test
+
+    def load_csv(self, path: str) -> pd.DataFrame:
+        """Load and validate a CSV with the required columns.
+
+        Args:
+            path: Path to CSV file
+
+        Returns:
+            Loaded DataFrame
+
+        Raises:
+            ValueError: If required columns are missing
+        """
+        required_columns = ['text', 'label']
+
+        df = pd.read_csv(path)
+
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f'Missing required columns: {missing_columns}')
+
+        return df
+
+    @classmethod
+    def _prepare(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Map columns and labels without cleaning the names.
+
+        Coerces the integer label to the string labels used downstream, renames
+        ``text`` to ``entity_name``, and drops rows whose label is not 0 or 1.
+        The names themselves are left untouched (the source is pre-cleaned).
+
+        Args:
+            df: Input DataFrame with columns ``text`` and ``label``
+
+        Returns:
+            DataFrame with columns ``entity_name`` and ``label``
+        """
+        df = df.copy()
+
+        # Coerce label to numeric and drop anything outside {0, 1}
+        df['label'] = pd.to_numeric(df['label'], errors='coerce')
+        df = df[df['label'].isin(cls.LABEL_MAP.keys())]
+
+        df['entity_name'] = df['text'].astype(str)
+        df['label'] = df['label'].astype(int).map(cls.LABEL_MAP)
+
+        return df[['entity_name', 'label']].reset_index(drop=True)
+
+    @staticmethod
+    def format_row(row: pd.Series) -> dict:
+        """Convert a row to a dictionary with classification fields.
+
+        Args:
+            row: DataFrame row with columns ``entity_name`` and ``label``
+
+        Returns:
+            Dictionary with the entity name and its string label
+        """
+        return {
+            'entity_name': row.get('entity_name', ''),
+            'label': row.get('label', ''),
+        }
+
+    def create_dataset(
+        self, train_df: pd.DataFrame, test_df: pd.DataFrame
+    ) -> DatasetDict:
+        """Create a HuggingFace DatasetDict from pre-split source frames.
+
+        Draws class-balanced, fixed-size splits: ``train`` and ``validation`` are
+        disjoint samples drawn per class from ``train_df`` (seed 42); ``test`` is
+        sampled per class from ``test_df`` (seed 42). Each split is balanced 50/50
+        across person/company.
+
+        Args:
+            train_df: Source train frame (columns ``text``, ``label``)
+            test_df: Source test frame (columns ``text``, ``label``)
+
+        Returns:
+            DatasetDict with train/validation/test splits
+        """
+        train_df = self._prepare(train_df)
+        test_df = self._prepare(test_df)
+
+        per_class_train = self.n_train // 2
+        per_class_val = self.n_val // 2
+        per_class_test = self.n_test // 2
+
+        # Train + validation come from disjoint per-class slices of train_df
+        train_parts, val_parts, test_parts = [], [], []
+        for _, group in train_df.groupby('label'):
+            group = group.sample(frac=1.0, random_state=42).reset_index(drop=True)
+            train_parts.append(group[:per_class_train])
+            val_parts.append(group[per_class_train : per_class_train + per_class_val])
+
+        # Test is sampled per class from the held-out test_df
+        for _, group in test_df.groupby('label'):
+            group = group.sample(frac=1.0, random_state=42).reset_index(drop=True)
+            test_parts.append(group[:per_class_test])
+
+        # Concatenate per-class slices and shuffle each split (seed 42)
+        train_split = (
+            pd.concat(train_parts)
+            .sample(frac=1.0, random_state=42)
+            .reset_index(drop=True)
+        )
+        val_split = (
+            pd.concat(val_parts)
+            .sample(frac=1.0, random_state=42)
+            .reset_index(drop=True)
+        )
+        test_split = (
+            pd.concat(test_parts)
+            .sample(frac=1.0, random_state=42)
+            .reset_index(drop=True)
+        )
+
+        # Format each split
+        train_data = [self.format_row(row) for _, row in train_split.iterrows()]
+        val_data = [self.format_row(row) for _, row in val_split.iterrows()]
+        test_data = [self.format_row(row) for _, row in test_split.iterrows()]
+
+        # Create DatasetDict
+        dataset_dict = DatasetDict(
+            {
+                'train': Dataset.from_list(train_data),
+                'validation': Dataset.from_list(val_data),
+                'test': Dataset.from_list(test_data),
+            }
+        )
+
+        return dataset_dict

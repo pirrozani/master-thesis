@@ -144,6 +144,11 @@ Set PUSH_APPROVED=1 to skip the interactive push confirmation.
             path, repo_id, path.name, token, f'Add {quant} GGUF for {task}'
         )
 
+    readme = adapter_path / 'README.md'
+    if readme.is_file():
+        print('Uploading README.md ...')
+        upload_gguf(readme, repo_id, 'README.md', token, 'Add model card')
+
     # Clean up the local working directory after a successful push.
     shutil.rmtree(work_dir, ignore_errors=True)
 

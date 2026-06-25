@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from huggingface_hub import HfApi, metadata_update
 
 from src.utils.gguf import (
     QUANT_METHOD,
@@ -15,7 +16,6 @@ from src.utils.gguf import (
     get_hf_username,
     parse_adapter_path,
     resolve_base_model,
-    upload_gguf,
     validate_quants,
 )
 
@@ -137,17 +137,39 @@ Set PUSH_APPROVED=1 to skip the interactive push confirmation.
     print(f'\nEnsuring private repo {repo_id} ...')
     ensure_private_repo(repo_id, token)
 
+    api = HfApi()
     url = f'https://huggingface.co/{repo_id}'
     for quant, path in gguf_paths.items():
         print(f'Uploading {path.name} ...')
-        url = upload_gguf(
-            path, repo_id, path.name, token, f'Add {quant} GGUF for {task}'
+        api.upload_file(
+            path_or_fileobj=str(path),
+            path_in_repo=path.name,
+            repo_id=repo_id,
+            repo_type='model',
+            token=token,
+            commit_message=f'Add {quant} GGUF for {task}',
         )
 
     readme = adapter_path / 'README.md'
     if readme.is_file():
         print('Uploading README.md ...')
-        upload_gguf(readme, repo_id, 'README.md', token, 'Add model card')
+        api.upload_file(
+            path_or_fileobj=str(readme),
+            path_in_repo='README.md',
+            repo_id=repo_id,
+            repo_type='model',
+            token=token,
+            commit_message='Add model card',
+        )
+
+    print('Updating model card metadata ...')
+    metadata_update(
+        repo_id=repo_id,
+        metadata={'base_model': base_model, 'tags': ['gguf', 'unsloth']},
+        repo_type='model',
+        token=token,
+        overwrite=True,
+    )
 
     # Clean up the local working directory after a successful push.
     shutil.rmtree(work_dir, ignore_errors=True)

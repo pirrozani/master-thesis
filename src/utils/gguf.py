@@ -295,31 +295,3 @@ def ensure_private_repo(repo_id: str, token: str) -> None:
     create_repo(repo_id, repo_type='model', private=True, exist_ok=True, token=token)
 
 
-def upload_gguf(
-    gguf_path: str | Path,
-    repo_id: str,
-    filename: str,
-    token: str,
-    commit_message: str,
-) -> str:
-    """Upload a GGUF file to ``repo_id`` and return the repo URL.
-
-    Args:
-        gguf_path: Local path to the GGUF file.
-        repo_id: Target Hub repo id (``owner/name``).
-        filename: Destination filename within the repo.
-        token: Hugging Face access token with write scope.
-        commit_message: Commit message for the upload.
-
-    Returns:
-        The Hub URL of the repository.
-    """
-    HfApi().upload_file(
-        path_or_fileobj=str(gguf_path),
-        path_in_repo=filename,
-        repo_id=repo_id,
-        repo_type='model',
-        token=token,
-        commit_message=commit_message,
-    )
-    return f'https://huggingface.co/{repo_id}'

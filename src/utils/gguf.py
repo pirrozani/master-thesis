@@ -241,21 +241,24 @@ def convert_adapter_to_gguf(
     quants = list(quant_filenames)
     model.save_pretrained_gguf(str(work_dir), tokenizer, quantization_method=quants)
 
-    # Match each requested quant to its produced file by the quant tag in the
-    # filename; ``used`` prevents two quants from claiming the same file.
-    produced = sorted(work_dir.glob('*.gguf'))
+    gguf_dir = work_dir
+    unsloth_dir = work_dir.parent / (work_dir.name + '_gguf')
+    if unsloth_dir.is_dir():
+        gguf_dir = unsloth_dir
+
+    produced = sorted(gguf_dir.glob('*.gguf'))
     results: dict[str, Path] = {}
     used: set[Path] = set()
     for quant, filename in quant_filenames.items():
         tag = quant.lower()
         candidates = [p for p in produced if p not in used and tag in p.name.lower()]
         if not candidates:
-            raise RuntimeError(f'No GGUF produced for quant {quant!r} in {work_dir}')
+            raise RuntimeError(f'No GGUF produced for quant {quant!r} in {gguf_dir}')
 
         source = candidates[0]
         used.add(source)
 
-        target = work_dir / filename
+        target = gguf_dir / filename
         if source != target:
             source.replace(target)
         results[quant] = target

@@ -42,7 +42,10 @@ def main() -> None:
     load_dotenv()
     token = os.environ.get('HF_TOKEN')
     if not token:
-        print('Error: HF_TOKEN is not set. Add it to your environment or a .env file.', file=sys.stderr)
+        print(
+            'Error: HF_TOKEN is not set. Add it to your environment or a .env file.',
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     try:
@@ -52,7 +55,8 @@ def main() -> None:
         sys.exit(1)
 
     rel = adapter_path.as_posix().split('adapters/')[-1]  # e.g. 'address/qwen-0.5b'
-    repo_id = f"{username}/{rel.replace('/', '-')}-gguf"  # e.g. 'user/address-qwen-0.5b-gguf'
+    repo_id = f"{username}/{rel.replace('/', '-')}-gguf"
+    # e.g. 'user/address-qwen-0.5b-gguf'
 
     print(f'Target HF repo: {repo_id} (private)')
 

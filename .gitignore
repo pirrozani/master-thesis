@@ -53,6 +53,10 @@ unsloth_compiled_cache
 # Training outputs
 outputs/
 
+# GGUF exports
+exports/*
+!exports/.gitkeep
+
 # Logs
 logs/runs/*
 !logs/runs/.gitkeep

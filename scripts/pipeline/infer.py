@@ -169,8 +169,8 @@ def main():
     parser.add_argument(
         '--concurrent',
         action=argparse.BooleanOptionalAction,
-        default=True,
-        help='Load stage models concurrently (default: true)',
+        default=False,
+        help='Load stage models concurrently (default: false)',
     )
     parser.add_argument(
         '--batch',

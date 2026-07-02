@@ -1,6 +1,8 @@
 """Inference pipeline for address extraction."""
 
+import torch
 from unsloth import FastLanguageModel
+
 from src.config import ModelConfig, get_model_config
 from src.address.config import (
     MODEL_REGISTRY,
@@ -58,6 +60,13 @@ class AddressExtractor:
             RuntimeError: If model or adapter loading fails
         """
         try:
+            dtype = (
+                torch.bfloat16
+                if self.device.startswith('cuda')
+                and torch.cuda.is_available()
+                and torch.cuda.is_bf16_supported()
+                else None
+            )
             # Load base model with adapter weights
             # FastLanguageModel.from_pretrained automatically merges adapters
             # when adapter_path is provided
@@ -65,7 +74,7 @@ class AddressExtractor:
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=self.adapter_path,  # Load from the adapter directory
                 max_seq_length=2048,  # model context window
-                dtype=None,  # Auto-detect dtype
+                dtype=dtype,  # Use BF16 explicitly on supported CUDA GPUs
                 load_in_4bit=True,  # Use 4-bit quantization for efficiency
             )
 

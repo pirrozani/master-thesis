@@ -167,6 +167,12 @@ def main():
         ),
     )
     parser.add_argument(
+        '--concurrent',
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help='Load stage models concurrently (default: true)',
+    )
+    parser.add_argument(
         '--batch',
         action='store_true',
         help='Treat input as file path and process lines in batch (JSONL output)',
@@ -279,7 +285,7 @@ def main():
                 classification_model=args.classification_model,
                 classification_task=args.classification_task,
             )
-            pipeline.load_models()
+            pipeline.load_models(concurrent=args.concurrent)
     except RuntimeError as e:
         print(f'Error loading models: {e}', file=sys.stderr)
         sys.exit(1)

@@ -1,3 +1,4 @@
+import concurrent.futures as futures
 import sys
 
 from src.address.inference import AddressExtractor
@@ -74,18 +75,39 @@ class ExtractionPipeline:
         self.classification_task = classification_task
         self.device = device
 
-    def load_models(self) -> None:
-        """Load the three stage models sequentially.
+    def load_models(self, concurrent: bool = True) -> None:
+        """Load the three stage models.
 
-        Load order is fixed (address, extraction, classification) so a
-        failure is attributable to a single stage.
+        Args:
+            concurrent: If True, load stages concurrently with a sequential
+                fallback. If False, load stages sequentially.
 
         Raises:
-            RuntimeError: If any stage model fails to load
+            RuntimeError: If a stage model fails to load (sequential path)
         """
-        self.address_extractor.load_model()
-        self.name_extractor.load_model()
-        self.type_classifier.load_model()
+        loaders = [
+            self.address_extractor.load_model,
+            self.name_extractor.load_model,
+            self.type_classifier.load_model,
+        ]
+        if not concurrent:
+            for loader in loaders:
+                loader()
+            return
+
+        try:
+            with futures.ThreadPoolExecutor(max_workers=len(loaders)) as executor:
+                pending = [executor.submit(loader) for loader in loaders]
+                for future in futures.as_completed(pending):
+                    future.result()
+        except Exception as e:
+            print(
+                f'Concurrent model loading failed ({e}); '
+                'falling back to sequential loading.',
+                file=sys.stderr,
+            )
+            for loader in loaders:
+                loader()
 
     def run(self, text: str) -> PipelineResult:
         """Run the full pipeline on a single raw combined line.

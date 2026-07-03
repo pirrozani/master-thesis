@@ -85,29 +85,26 @@ class ExtractionPipeline:
         Raises:
             RuntimeError: If a stage model fails to load (sequential path)
         """
-        loaders = [
-            self.address_extractor.load_model,
-            self.name_extractor.load_model,
-            self.type_classifier.load_model,
-        ]
+        stages = [self.address_extractor, self.name_extractor, self.type_classifier]
         if not concurrent:
-            for loader in loaders:
-                loader()
+            for stage in stages:
+                stage.load_model()
             return
 
         try:
-            with futures.ThreadPoolExecutor(max_workers=len(loaders)) as executor:
-                pending = [executor.submit(loader) for loader in loaders]
+            with futures.ThreadPoolExecutor(max_workers=len(stages)) as executor:
+                pending = [executor.submit(stage.load_model) for stage in stages]
                 for future in futures.as_completed(pending):
                     future.result()
         except Exception as e:
             print(
                 f'Concurrent model loading failed ({e}); '
-                'falling back to sequential loading.',
+                'falling back to sequential loading for the remaining stages.',
                 file=sys.stderr,
             )
-            for loader in loaders:
-                loader()
+            for stage in stages:
+                if stage.model is None:
+                    stage.load_model()
 
     def run(self, text: str) -> PipelineResult:
         """Run the full pipeline on a single raw combined line.

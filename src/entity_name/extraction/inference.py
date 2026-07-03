@@ -64,7 +64,7 @@ class EntityNameExtractor:
                 torch.bfloat16
                 if self.device.startswith('cuda')
                 and torch.cuda.is_available()
-                and torch.cuda.is_bf16_supported()
+                and torch.cuda.is_bf16_supported(including_emulation=False)
                 else None
             )
             model, tokenizer = FastLanguageModel.from_pretrained(

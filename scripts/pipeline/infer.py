@@ -104,7 +104,7 @@ def run_interactive_mode(pipeline: 'ExtractionPipeline') -> None:
                 print(format_result_json(result))
                 print()
 
-            except RuntimeError as e:
+            except Exception as e:
                 print(f'\nError: {e}', file=sys.stderr)
                 print('Please try again.\n', file=sys.stderr)
 
@@ -300,7 +300,7 @@ def main():
         try:
             with contextlib.redirect_stdout(sys.stderr):
                 results = pipeline.run_batch(texts, batch_size=args.batch_size)
-        except RuntimeError as e:
+        except Exception as e:
             print(f'Error during batch inference: {e}', file=sys.stderr)
             sys.exit(1)
 
@@ -325,7 +325,7 @@ def main():
         try:
             with contextlib.redirect_stdout(sys.stderr):
                 result = pipeline.run(text)
-        except RuntimeError as e:
+        except Exception as e:
             print(f'Error during inference: {e}', file=sys.stderr)
             sys.exit(1)
 

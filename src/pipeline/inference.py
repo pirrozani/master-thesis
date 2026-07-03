@@ -3,7 +3,6 @@ import sys
 
 from src.address.inference import AddressExtractor
 from src.entity_name.classification.inference import EntityTypeClassifier
-from src.entity_name.classification.models import EntityType
 from src.entity_name.extraction.inference import EntityNameExtractor
 from src.pipeline.config import (
     DEFAULT_BATCH_SIZE,
@@ -165,21 +164,9 @@ class ExtractionPipeline:
 
             addresses = self.address_extractor.extract_batch(chunk)
             names = self.name_extractor.extract_batch(chunk)
-
-            # classify_batch has no per-item empty guard, so empty names
-            # keep the invalid sentinel and never reach the model
-            entity_types = [EntityType() for _ in chunk]
-            to_classify = [
-                (index, name.name)
-                for index, name in enumerate(names)
-                if name.name.strip()
-            ]
-            if to_classify:
-                predicted = self.type_classifier.classify_batch(
-                    [name for _, name in to_classify]
-                )
-                for (index, _), entity_type in zip(to_classify, predicted):
-                    entity_types[index] = entity_type
+            entity_types = self.type_classifier.classify_batch(
+                [name.name for name in names]
+            )
 
             results.extend(
                 PipelineResult.from_stages(address, name, entity_type)

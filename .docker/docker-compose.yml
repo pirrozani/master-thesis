@@ -1,0 +1,53 @@
+name: master-thesis
+
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.24.0
+    ipc: host
+    ports:
+      - '8000:8000'
+    volumes:
+      - ../adapters:/adapters:ro
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - '--model'
+      - 'Qwen/Qwen2.5-0.5B-Instruct'
+      - '--dtype'
+      - 'bfloat16'
+      - '--max-model-len'
+      - '2048'
+      - '--gpu-memory-utilization'
+      - '0.5'
+      - '--enable-lora'
+      - '--max-lora-rank'
+      - '16'
+      - '--max-loras'
+      - '3'
+      - '--lora-modules'
+      - 'address=/adapters/address/qwen-0.5b'
+      - 'extraction=/adapters/entity_name/extraction/qwen-0.5b'
+      - 'classification=/adapters/entity_name/classification_external/qwen-0.5b'
+
+  app:
+    build:
+      context: ..
+      dockerfile: .docker/app/Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - VLLM_BASE_URL=http://vllm:8000/v1
+    volumes:
+      - ../src:/app/src:ro
+      - ../ui:/app/ui:ro
+    depends_on:
+      - vllm
+
+volumes:
+  hf-cache:

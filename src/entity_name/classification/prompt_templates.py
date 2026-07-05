@@ -1,7 +1,11 @@
 """Prompt templates and message formatting for entity type classification."""
 
-from transformers import PreTrainedTokenizer
+from typing import TYPE_CHECKING
+
 from src.entity_name.classification.models import EntityType
+
+if TYPE_CHECKING:
+    from transformers import PreTrainedTokenizer
 
 # Standard prompt template
 CLASSIFY_PROMPT = 'Classify: {name}'
@@ -88,7 +92,7 @@ def create_inference_messages(name: str) -> list[dict]:
     return [create_system_message(), create_user_message(name)]
 
 
-def format_training_example(fields: dict, tokenizer: PreTrainedTokenizer) -> str:
+def format_training_example(fields: dict, tokenizer: 'PreTrainedTokenizer') -> str:
     """Format a complete training example with a chat template.
 
     Args:
@@ -107,7 +111,7 @@ def format_training_example(fields: dict, tokenizer: PreTrainedTokenizer) -> str
     )
 
 
-def format_inference_prompt(name: str, tokenizer: PreTrainedTokenizer) -> str:
+def format_inference_prompt(name: str, tokenizer: 'PreTrainedTokenizer') -> str:
     """Format an inference prompt with chat template.
 
     Args:

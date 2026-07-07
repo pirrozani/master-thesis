@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from src.address.inference import AddressExtractor
 from src.address.models import Address
-from src.utils import save_file
+from src.utils import normalize_text, save_file
 
 
 @dataclass
@@ -50,11 +50,16 @@ class EvaluationMetrics:
             f'  Rate: {self.exact_match_rate:.2%}',
             '',
             'Field-Level Accuracy:',
-            f'  Street: {self.street_accuracy:.2%} ({self.street_correct}/{self.total_samples})',
-            f'  City: {self.city_accuracy:.2%} ({self.city_correct}/{self.total_samples})',
-            f'  State: {self.state_accuracy:.2%} ({self.state_correct}/{self.total_samples})',
-            f'  Zip Code: {self.zip_accuracy:.2%} ({self.zip_correct}/{self.total_samples})',
-            f'  Country: {self.country_accuracy:.2%} ({self.country_correct}/{self.total_samples})',
+            f'  Street: {self.street_accuracy:.2%} '
+            f'({self.street_correct}/{self.total_samples})',
+            f'  City: {self.city_accuracy:.2%} '
+            f'({self.city_correct}/{self.total_samples})',
+            f'  State: {self.state_accuracy:.2%} '
+            f'({self.state_correct}/{self.total_samples})',
+            f'  Zip Code: {self.zip_accuracy:.2%} '
+            f'({self.zip_correct}/{self.total_samples})',
+            f'  Country: {self.country_accuracy:.2%} '
+            f'({self.country_correct}/{self.total_samples})',
             '',
             f'Overall Field Accuracy: {self.field_accuracy:.2%}',
             '=' * 60,
@@ -97,17 +102,6 @@ class AddressEvaluator:
 
         return dataset
 
-    def _normalize_field(self, value: str) -> str:
-        """Normalize field value for comparison.
-
-        Args:
-            value: Raw field value
-
-        Returns:
-            Normalized value (lowercase, stripped)
-        """
-        return value.lower().strip()
-
     def _compare_addresses(
         self,
         predicted: Address,
@@ -123,16 +117,9 @@ class AddressEvaluator:
             Dictionary with field-level comparison results
         """
         return {
-            'street': self._normalize_field(predicted.street)
-            == self._normalize_field(ground_truth.street),
-            'city': self._normalize_field(predicted.city)
-            == self._normalize_field(ground_truth.city),
-            'state': self._normalize_field(predicted.state)
-            == self._normalize_field(ground_truth.state),
-            'zip_code': self._normalize_field(predicted.zip_code)
-            == self._normalize_field(ground_truth.zip_code),
-            'country': self._normalize_field(predicted.country)
-            == self._normalize_field(ground_truth.country),
+            name: normalize_text(getattr(predicted, name))
+            == normalize_text(getattr(ground_truth, name))
+            for name in Address.model_fields
         }
 
     def evaluate(

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Structured Extraction Pipeline</title>
+<link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Structured Extraction Pipeline</h1>
+    <span id="health"><span class="dot"></span><span id="health-text">checking&hellip;</span></span>
+  </header>
+  <p class="sub">Fine-tuned Qwen2.5-0.5B LoRA adapters served by vLLM</p>
+
+  <textarea id="input" placeholder="Raw input text line"></textarea>
+  <div class="buttons">
+    <button class="primary" data-action="pipeline">Run Full Pipeline</button>
+    <button data-action="address">Address Only</button>
+    <button data-action="entity-name">Entity Name Only</button>
+    <button data-action="entity-type">Classify Name</button>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h2>Address</h2>
+      <div id="card-address"><span class="empty">No result yet.</span></div>
+    </div>
+    <div class="card">
+      <h2>Entity Name</h2>
+      <div id="card-name"><span class="empty">No result yet.</span></div>
+    </div>
+    <div class="card">
+      <h2>Entity Type</h2>
+      <div id="card-type"><span class="empty">No result yet.</span></div>
+    </div>
+    <div class="card raw">
+      <h2>Raw Model Outputs &amp; Latency</h2>
+      <div id="card-raw"><span class="empty">No result yet.</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="../static/js/app.js"></script>
+</body>
+</html>

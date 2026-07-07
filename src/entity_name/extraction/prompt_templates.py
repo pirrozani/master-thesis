@@ -1,7 +1,11 @@
 """Prompt templates and message formatting for entity name extraction."""
 
-from transformers import PreTrainedTokenizer
+from typing import TYPE_CHECKING
+
 from src.entity_name.extraction.models import EntityName
+
+if TYPE_CHECKING:
+    from transformers import PreTrainedTokenizer
 
 # Standard prompt template
 EXTRACT_PROMPT = 'Extract: {text}'
@@ -90,7 +94,7 @@ def create_inference_messages(text: str) -> list[dict]:
     return [create_system_message(), create_user_message(text)]
 
 
-def format_training_example(fields: dict, tokenizer: PreTrainedTokenizer) -> str:
+def format_training_example(fields: dict, tokenizer: 'PreTrainedTokenizer') -> str:
     """Format a complete training example with a chat template.
 
     Args:
@@ -109,7 +113,7 @@ def format_training_example(fields: dict, tokenizer: PreTrainedTokenizer) -> str
     )
 
 
-def format_inference_prompt(text: str, tokenizer: PreTrainedTokenizer) -> str:
+def format_inference_prompt(text: str, tokenizer: 'PreTrainedTokenizer') -> str:
     """Format an inference prompt with chat template.
 
     Args:

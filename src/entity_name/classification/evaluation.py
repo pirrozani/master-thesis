@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from src.entity_name.classification.inference import EntityTypeClassifier
 from src.entity_name.classification.models import COMPANY, PERSON, VALID_LABELS
-from src.utils import save_file
+from src.utils import class_metrics, normalize_text, save_file
 
 
 @dataclass
@@ -105,39 +105,6 @@ class EntityTypeEvaluator:
 
         return dataset
 
-    @staticmethod
-    def _normalize_label(value: str) -> str:
-        """Normalize a label value for comparison.
-
-        Args:
-            value: Raw label value
-
-        Returns:
-            Normalized value (lowercase, stripped)
-        """
-        return value.lower().strip()
-
-    @staticmethod
-    def _class_metrics(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
-        """Compute precision, recall, and F1 from per-class counts.
-
-        Args:
-            tp: True positives for the class
-            fp: False positives for the class
-            fn: False negatives for the class
-
-        Returns:
-            Tuple of (precision, recall, f1), each 0.0 on zero denominator
-        """
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f1 = (
-            2 * precision * recall / (precision + recall)
-            if (precision + recall) > 0
-            else 0.0
-        )
-        return precision, recall, f1
-
     def evaluate(
         self,
         save_predictions: bool = False,
@@ -190,9 +157,7 @@ class EntityTypeEvaluator:
 
             # Extract input names and ground-truth labels directly from raw fields
             input_names = batch_samples['entity_name']
-            ground_truths = [
-                self._normalize_label(label) for label in batch_samples['label']
-            ]
+            ground_truths = [normalize_text(label) for label in batch_samples['label']]
 
             # Run batch inference
             predicted_types = self.classifier.classify_batch(input_names)
@@ -230,12 +195,10 @@ class EntityTypeEvaluator:
         person_fp = confusion[COMPANY][PERSON]
         person_fn = confusion[PERSON][COMPANY] + invalid_by_true[PERSON]
 
-        company_p, company_r, company_f1 = self._class_metrics(
+        company_p, company_r, company_f1 = class_metrics(
             company_tp, company_fp, company_fn
         )
-        person_p, person_r, person_f1 = self._class_metrics(
-            person_tp, person_fp, person_fn
-        )
+        person_p, person_r, person_f1 = class_metrics(person_tp, person_fp, person_fn)
 
         correct = company_tp + person_tp
         invalid = invalid_by_true[COMPANY] + invalid_by_true[PERSON]

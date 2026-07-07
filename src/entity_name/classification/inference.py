@@ -1,6 +1,8 @@
 """Inference pipeline for entity type classification."""
 
+import torch
 from unsloth import FastLanguageModel
+
 from src.config import ModelConfig, get_model_config
 from src.entity_name.classification.config import (
     MODEL_REGISTRY,
@@ -58,10 +60,17 @@ class EntityTypeClassifier:
             RuntimeError: If model or adapter loading fails
         """
         try:
+            dtype = (
+                torch.bfloat16
+                if self.device.startswith('cuda')
+                and torch.cuda.is_available()
+                and torch.cuda.is_bf16_supported(including_emulation=False)
+                else None
+            )
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=self.adapter_path,  # Load from the adapter directory
                 max_seq_length=2048,  # model context window
-                dtype=None,  # Auto-detect dtype
+                dtype=dtype,  # Use BF16 explicitly on supported CUDA GPUs
                 load_in_4bit=True,  # Use 4-bit quantization for efficiency
             )
 
@@ -146,7 +155,8 @@ class EntityTypeClassifier:
             texts: List of cleaned entity names to classify
 
         Returns:
-            List of EntityType objects with predicted labels
+            List of EntityType objects with predicted labels (empty names
+            yield the invalid sentinel without reaching the model)
 
         Raises:
             RuntimeError: If the model is not loaded
@@ -160,8 +170,18 @@ class EntityTypeClassifier:
         if not texts:
             return []
 
+        # Pre-fill the invalid sentinel; empty names never reach the model
+        results: list[EntityType] = [EntityType() for _ in texts]
+        to_classify = [(i, text) for i, text in enumerate(texts) if text.strip()]
+        if not to_classify:
+            return results
+
+        indices, non_empty_texts = zip(*to_classify)
+
         # Create chat-formatted prompts for all texts using a centralized module
-        prompts = [format_inference_prompt(text, self.tokenizer) for text in texts]
+        prompts = [
+            format_inference_prompt(text, self.tokenizer) for text in non_empty_texts
+        ]
 
         # Tokenize all inputs with padding
         inputs = self.tokenizer(
@@ -183,15 +203,14 @@ class EntityTypeClassifier:
             eos_token_id=self.tokenizer.eos_token_id,
         )
 
-        # Decode all outputs and parse labels
-        results = []
-        for input_ids, output_ids in zip(inputs['input_ids'], outputs):
+        # Decode all outputs and parse labels back into their original slots
+        for index, input_ids, output_ids in zip(indices, inputs['input_ids'], outputs):
             # Extract only generated tokens (exclude input tokens)
             generated_ids = output_ids[len(input_ids) :]
             completion = self.tokenizer.decode(
                 generated_ids, skip_special_tokens=True
             ).strip()
 
-            results.append(EntityType.from_output(completion))
+            results[index] = EntityType.from_output(completion)
 
         return results

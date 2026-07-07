@@ -115,23 +115,19 @@ $('input').addEventListener('keydown', (e) => {
 
 async function checkHealth() {
   const el = $('health');
+  el.className = 'down';
+  $('health-text').textContent = 'vLLM down';
   try {
     const res = await fetch('/api/health');
     const h = await res.json();
-    if (h.vllm_up && h.adapters_ready) {
+    if (h.vllm_up) {
       el.className = 'up';
       $('health-text').textContent = 'vLLM up';
-    } else if (h.vllm_up) {
-      el.className = 'partial';
-      $('health-text').textContent = 'vLLM up - adapters missing';
-    } else {
-      el.className = 'down';
-      $('health-text').textContent = 'vLLM unreachable';
     }
   } catch {
     el.className = 'down';
-    $('health-text').textContent = 'backend unreachable';
+    $('health-text').textContent = 'vLLM down';
   }
 }
 checkHealth();
-setInterval(checkHealth, 10000);
+setInterval(checkHealth, 30000);

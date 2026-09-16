@@ -18,7 +18,7 @@ services:
               capabilities: [gpu]
     command:
       - '--model'
-      - 'Qwen/Qwen2.5-0.5B-Instruct'
+      - 'unsloth/qwen2.5-0.5b-instruct-unsloth-bnb-4bit'
       - '--dtype'
       - 'bfloat16'
       - '--max-model-len'

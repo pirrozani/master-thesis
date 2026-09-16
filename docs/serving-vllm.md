@@ -25,8 +25,10 @@ it from.
 docker compose -f .docker/docker-compose.yml up vllm
 ```
 
-The first start downloads `Qwen/Qwen2.5-0.5B-Instruct` into the named
-`hf-cache` volume. The current candidate image is
+The first start downloads
+`unsloth/qwen2.5-0.5b-instruct-unsloth-bnb-4bit` into the named `hf-cache`
+volume. This is the same pre-quantized base checkpoint recorded by the LoRA
+adapters; `--dtype bfloat16` specifies their compute dtype. The current image is
 `vllm/vllm-openai:v0.24.0`. The server registers these LoRA model names:
 
 - `address` -> `adapters/address/qwen-0.5b`

@@ -105,10 +105,6 @@ def preprocess_entity_type(csv_path: str, output_dir: str) -> None:
     print(f'Loading CSV from {csv_path}...')
     df = preprocessor.load_csv(csv_path)
 
-    # Load some of the data because there is a class imbalance
-    df = df.sample(frac=0.1, random_state=42)
-    df = df.reset_index(drop=True)
-
     print(f'Loaded {len(df)} rows')
 
     print('Cleaning data...')

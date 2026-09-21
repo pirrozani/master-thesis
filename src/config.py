@@ -30,7 +30,7 @@ def get_model_config(
     """Get model configuration by alias with a task-specific adapter directory.
 
     Args:
-        model_alias: Short model alias (e.g., 'qwen-0.5b', 'gemma-270m')
+        model_alias: Short model alias (e.g., 'qwen-0.5b', 'qwen-3b')
         task: Task name for adapter directory scoping
         registry: Task-specific registry mapping aliases to configurations
 

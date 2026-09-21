@@ -128,7 +128,7 @@ def main():
         '--model',
         type=str,
         default='qwen-3b',
-        help='Model alias (e.g., gemma-270m, qwen-3b)',
+        help='Model alias (e.g., qwen-0.5b, qwen-3b)',
     )
     parser.add_argument(
         '--adapter-path',
